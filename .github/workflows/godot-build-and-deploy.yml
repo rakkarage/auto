@@ -94,9 +94,6 @@ jobs:
   Deploy:
     needs: Build
     runs-on: ubuntu-latest
-    # environment:
-    #   name: github-pages
-    #   url: '${{ steps.deployment.outputs.page_url }}'
     steps:
       - name: Configure
         uses: actions/configure-pages@v5
