@@ -4,8 +4,7 @@ on:
     inputs:
       godot_version:
         description: Godot Version
-        default: '4.3'
-        required: false
+        required: true
         type: string
 concurrency:
   group: godot-build-and-deploy
