@@ -52,6 +52,7 @@ jobs:
           BEGIN {
             print "["
           }
+          # Match the relevant lines in export_presets.cfg
           /^\[preset/ {preset=$0}
           /^\s*platform/ {platform=$2}
           /^\s*export_path/ {
@@ -69,19 +70,33 @@ jobs:
                   }
               }
 
-              # Extract filename and extension
+              # Extract filename and extension from the path
               split(path, arr, "/")
               full_filename = arr[length(arr)]
               split(full_filename, file_parts, ".")
               filename = file_parts[1]
-              extension = (length(file_parts) > 1) ? "." file_parts[2] : ".ext"
 
-              # Print output as a JSON-like object
-              print "{ \"platform\": " platform ", \"file\": \"" filename "\", \"ext\": \"" extension "\" },"
+              # Determine extension
+              if (length(file_parts) > 1) {
+                  extension = "." file_parts[2]
+              } else {
+                  if (platform == "\"Linux\"") {
+                      extension = ".x86_64"
+                  } else if (platform == "\"macOS\"") {
+                      extension = ".zip"
+                  } else if (platform == "\"Web\"") {
+                      extension = ".html"
+                  } else if (platform == "\"Windows Desktop\"") {
+                      extension = ".exe"
+                  }
+              }
+
+              # Output JSON object for the platform
+              print "{\"platform\": " platform ", \"file\": \"" filename "\", \"ext\": \"" extension "\"},"
           }
           END {
             print "]"
-          }' export_presets.cfg | tee matrix.json
+          }' export_presets.cfg | sed '$ s/,$//' > matrix.json
       - name: Matrix
         id: matrix
         run: echo "matrix=$(cat matrix.json)" >> $GITHUB_OUTPUT
