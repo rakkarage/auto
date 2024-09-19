@@ -89,7 +89,8 @@ jobs:
 
               # Print the final result in JSON format
               printf("{\"Platform\": %s, \"Export Path\": %s, \"Filename\": %s, \"Extension\": %s}\n", platform, path, filename, extension)
-          }' export_presets.cfg
+          }' export_presets.cfg | jq -c '.' > matrix.json
+          cat matrix.json
 Build:
     needs: [Setup, Parse]
     runs-on: ubuntu-latest
