@@ -40,6 +40,10 @@ jobs:
   Parse:
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: true
       - name: Parse
         id: parse
         run: |
