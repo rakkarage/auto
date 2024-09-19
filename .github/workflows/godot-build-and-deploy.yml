@@ -91,7 +91,8 @@ jobs:
                   }
               }
 
-              # Output JSON object for the platform
+              # Output JSON object for the platform, escaping quotes for GitHub Actions
+              gsub("\"", "\\\"", platform)  # Escape double quotes for JSON
               print "{\"platform\": " platform ", \"file\": \"" filename "\", \"ext\": \"" extension "\"},"
           }
           END {
