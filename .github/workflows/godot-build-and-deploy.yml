@@ -49,24 +49,13 @@ jobs:
       - name: Parse
         id: matrix
         run: |
-          # Generate the matrix JSON
           awk -F= '
-          BEGIN {
-              print "["
-          }
-           /^\[preset/ {
-              if (platform) {
-                  print "},"
-              }
-              platform=""
-              export_path=""
-          }
-           /^\s*platform/ {
-              platform=$2
-          }
-           /^\s*export_path/ {
+          /^\[preset/ {preset=$0}
+          /^\s*platform/ {platform=$2}
+          /^\s*export_path/ {
               path = $2
               if (path == "\"\"") {
+                  # Set default value if path is empty based on platform
                   if (platform == "\"Linux\"") {
                       path = "default_path/filename.x86_64"
                   } else if (platform == "\"macOS\"") {
@@ -77,24 +66,41 @@ jobs:
                       path = "default_path/filename.exe"
                   }
               }
+          
+              # Extract filename and extension from the path
               split(path, arr, "/")
               full_filename = arr[length(arr)]
+          
+              # Extract filename and extension
               split(full_filename, file_parts, ".")
               filename = file_parts[1]
-              extension = (length(file_parts) > 1) ? "." file_parts[2] : (platform == "\"Linux\"") ? ".x86_64" : (platform == "\"macOS\"") ? ".zip" : (platform == "\"Web\"") ? ".html" : (platform == "\"Windows Desktop\"") ? ".exe" : ""
-              print "{\"platform\": " platform ", \"file\": \"" filename "\", \"ext\": \"" extension "\""
-          }
-          END {
-              if (platform) {
-                  print "}"
-              }
-              print "]"
-          }' export_presets.cfg | jq -c '.' > matrix.json
           
+              # Determine extension
+              if (length(file_parts) > 1) {
+                  extension = "." file_parts[2]
+              } else {
+                  # Set default extension based on platform if no extension in the path
+                  if (platform == "\"Linux\"") {
+                      extension = ".x86_64"
+                  } else if (platform == "\"macOS\"") {
+                      extension = ".zip"
+                  } else if (platform == "\"Web\"") {
+                      extension = ".html"
+                  } else if (platform == "\"Windows Desktop\"") {
+                      extension = ".exe"
+                  } else {
+                      extension = ""
+                  }
+              }
+          
+              # Print the final result
+              print "Platform: " platform ", Export Path: " path ", Filename: " filename ", Extension: " extension
+          }' export_presets.cfg | jq -c '.' > matrix.json
+
           # Read and escape the JSON for GitHub Actions
           escaped_matrix=$(jq -R . < matrix.json)
           echo "Final Matrix: $escaped_matrix"  # This should print a single line
-          
+
           # Write the escaped matrix to GITHUB_OUTPUT
           echo "matrix=$escaped_matrix" >> $GITHUB_OUTPUT
   Build:
