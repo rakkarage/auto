@@ -91,7 +91,10 @@ jobs:
               printf("{\"Platform\": %s, \"Export Path\": %s, \"Filename\": %s, \"Extension\": %s}\n", platform, path, filename, extension)
           }' export_presets.cfg | jq -c '.' > matrix.json
           cat matrix.json
-Build:
+          escaped_matrix=$(jq -Rs . < matrix.json)
+          echo "Final Matrix: $escaped_matrix"
+          echo "matrix=$escaped_matrix" >> $GITHUB_OUTPUT
+  Build:
     needs: [Setup, Parse]
     runs-on: ubuntu-latest
     permissions:
