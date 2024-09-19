@@ -47,7 +47,32 @@ jobs:
       - name: Parse
         id: parse
         run: |
-          awk -F= '/^\[preset/ {preset=$0} /^\s*platform/ {platform=$2} /^\s*export_path/ {print "Platform: " platform ", Export Path: " $2}' export_presets.cfg
+          awk -F= '
+          BEGIN {
+            # Define default values for each platform
+            defaults["Linux"]="DEFAULT_LINUX_PATH"
+            defaults["macOS"]="DEFAULT_MACOS_PATH"
+            defaults["Web"]="DEFAULT_WEB_PATH"
+            defaults["Windows Desktop"]="DEFAULT_WINDOWS_PATH"
+          }
+          /^\[preset/ {
+            preset=$0
+            export_path=""
+          }
+          /^\s*platform/ {
+            platform=$2
+          }
+          /^\s*export_path/ {
+            export_path=$2
+          }
+          END {
+            if (platform) {
+              if (export_path == "") {
+                export_path=defaults[platform] ? defaults[platform] : "UNKNOWN_PATH"
+              }
+              print "Platform: " platform ", Export Path: " export_path
+            }
+          }' export_presets.cfg
     outputs:
       presets: ${{ steps.parse.outputs.presets }}
   Build:
