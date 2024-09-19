@@ -49,6 +49,7 @@ jobs:
       - name: Parse
         id: matrix
         run: |
+          # Generate the matrix JSON
           awk -F= '
           BEGIN {
               print "["
@@ -90,9 +91,9 @@ jobs:
               print "]"
           }' export_presets.cfg | jq -c '.' > matrix.json
           
-          # Read the JSON and escape it for GitHub Actions
+          # Read and escape the JSON for GitHub Actions
           escaped_matrix=$(jq -R . < matrix.json)
-          echo "Final Matrix: $escaped_matrix"
+          echo "Final Matrix: $escaped_matrix"  # This should print a single line
           
           # Write the escaped matrix to GITHUB_OUTPUT
           echo "matrix=$escaped_matrix" >> $GITHUB_OUTPUT
