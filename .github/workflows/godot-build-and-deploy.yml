@@ -39,13 +39,14 @@ jobs:
           mv templates/* ~/.local/share/godot/export_templates/${GODOT_VERSION}.stable
   Parse:
     runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.matrix.outputs.matrix }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
           submodules: true
       - name: Parse
-        id: parse
         run: |
           awk -F= '
           BEGIN {
@@ -81,8 +82,9 @@ jobs:
           END {
             print "]"
           }' export_presets.cfg | tee matrix.json
-    outputs:
-      presets: ${{ steps.parse.outputs.presets }}
+      - name: Matrix
+        id: matrix
+        run: echo "matrix=$(cat matrix.json)" >> $GITHUB_OUTPUT
   Build:
     needs: [Setup, Parse]
     runs-on: ubuntu-latest
@@ -90,19 +92,7 @@ jobs:
       contents: read
     strategy:
       matrix:
-        include:
-          - target: Linux
-            file: ${{ github.event.repository.name }}
-            ext: x86_64
-          - target: Web
-            file: index
-            ext: html
-          - target: Windows
-            file: ${{ github.event.repository.name }}
-            ext: exe
-          - target: macOS
-            file: ${{ github.event.repository.name }}
-            ext: zip
+        include: ${{ fromJson(needs.Parse.outputs.matrix) }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
