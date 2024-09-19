@@ -37,8 +37,50 @@ jobs:
           unzip -q templates.zip
           mkdir -v -p ~/.local/share/godot/export_templates/${GODOT_VERSION}.stable
           mv templates/* ~/.local/share/godot/export_templates/${GODOT_VERSION}.stable
+  Parse:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Parse
+        id: parse
+        run: |
+          PRESETS=$(awk '
+            BEGIN { FS="="; ORS=","; print "[" }
+            /^\[preset\./ {
+              if (preset) {
+                printf "{\"name\":\"%s\",\"platform\":\"%s\",\"file\":\"%s\",\"ext\":\"%s\"},", preset, platform, filename, ext;
+              }
+              gsub(/\[preset\.|\]/, "", $0);
+              preset = $0;
+              platform = ""; filename = ""; ext = "";
+            }
+            /^platform=/ {
+              gsub(/"/, "", $2);
+              platform = $2;
+            }
+            /^name=/ {
+              gsub(/"/, "", $2);
+              filename = $2;
+            }
+            /^export_path=/ {
+              match($2, /[^\/]+\.([^\.]+)$/);
+              ext = substr($2, RSTART, RLENGTH);
+              sub(/.*\./, "", ext);
+              gsub(/"/, "", ext);
+            }
+            END {
+              if (preset) {
+                printf "{\"name\":\"%s\",\"platform\":\"%s\",\"file\":\"%s\",\"ext\":\"%s\"}", preset, platform, filename, ext;
+              }
+              print "]"
+            }
+          ' export_presets.cfg | sed 's/,]/]/')
+          echo "presets=$PRESETS" >> $GITHUB_OUTPUT
+          echo "Parsed presets:"
+          echo "$PRESETS" | jq -r '.[] | "Preset: \(.name)\n  Platform: \(.platform)\n  File: \(.file)\n  Extension: \(.ext)\n"'
+    outputs:
+      presets: ${{ steps.parse.outputs.presets }}
   Build:
-    needs: Setup
+    needs: [Setup, Parse]
     runs-on: ubuntu-latest
     permissions:
       contents: read
