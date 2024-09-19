@@ -47,40 +47,42 @@ jobs:
       - name: Parse
         id: parse
         run: |
-          PRESETS=$(awk '
-            BEGIN { FS="="; ORS=","; print "[" }
-            /^\[preset\./ {
-              if (preset) {
-                printf "{\"name\":\"%s\",\"platform\":\"%s\",\"file\":\"%s\",\"ext\":\"%s\"},", preset, platform, filename, ext;
-              }
-              gsub(/\[preset\.|\]/, "", $0);
-              preset = $0;
-              platform = ""; filename = ""; ext = "";
-            }
-            /^platform=/ {
-              gsub(/"/, "", $2);
-              platform = $2;
-            }
-            /^name=/ {
-              gsub(/"/, "", $2);
-              filename = $2;
-            }
-            /^export_path=/ {
-              match($2, /[^\/]+\.([^\.]+)$/);
-              ext = substr($2, RSTART, RLENGTH);
-              sub(/.*\./, "", ext);
-              gsub(/"/, "", ext);
-            }
-            END {
-              if (preset) {
-                printf "{\"name\":\"%s\",\"platform\":\"%s\",\"file\":\"%s\",\"ext\":\"%s\"}", preset, platform, filename, ext;
-              }
-              print "]"
-            }
-          ' export_presets.cfg | sed 's/,]/]/')
-          echo "presets=$PRESETS" >> $GITHUB_OUTPUT
-          echo "Parsed presets:"
-          echo "$PRESETS" | jq -r '.[] | "Preset: \(.name)\n  Platform: \(.platform)\n  File: \(.file)\n  Extension: \(.ext)\n"'
+          python3 <<EOT
+          import configparser
+          import json
+          import os
+
+          config = configparser.ConfigParser()
+          config.read('export_presets.cfg')
+
+          presets = []
+          for section in config.sections():
+              if section.startswith('preset.'):
+                  preset = {
+                      "name": config.get(section, 'name', fallback=section),
+                      "platform": config.get(section, 'platform', fallback='unknown'),
+                      "file": config.get(section, 'name', fallback=section),
+                      "ext": "unknown"
+                  }
+                  export_path = config.get(section, 'export_path', fallback='')
+                  if export_path:
+                      _, ext = os.path.splitext(export_path)
+                      preset["ext"] = ext.lstrip('.') if ext else "unknown"
+                  presets.append(preset)
+
+          print("Parsed presets:")
+          for preset in presets:
+              print(f"Preset: {preset['name']}")
+              print(f"  Platform: {preset['platform']}")
+              print(f"  File: {preset['file']}")
+              print(f"  Extension: {preset['ext']}")
+              print()
+
+          json_output = json.dumps(presets)
+          print(f"presets={json_output}")
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as fh:
+              print(f"presets={json_output}", file=fh)
+          EOT
     outputs:
       presets: ${{ steps.parse.outputs.presets }}
   Build:
