@@ -50,15 +50,21 @@ jobs:
         run: |
           awk -F= '
           BEGIN {
-            print "["
-            first = 1
+              print "["
           }
-          /^\[preset/ {preset=$0}
-          /^\s*platform/ {platform=$2}
-          /^\s*export_path/ {
+           /^\[preset/ {
+              if (platform) {
+                  print "},"
+              }
+              platform=""
+              export_path=""
+          }
+           /^\s*platform/ {
+              platform=$2
+          }
+           /^\s*export_path/ {
               path = $2
               if (path == "\"\"") {
-                  # Set default value if path is empty based on platform
                   if (platform == "\"Linux\"") {
                       path = "default_path/filename.x86_64"
                   } else if (platform == "\"macOS\"") {
@@ -69,43 +75,24 @@ jobs:
                       path = "default_path/filename.exe"
                   }
               }
-
-              # Extract filename and extension from the path
               split(path, arr, "/")
               full_filename = arr[length(arr)]
               split(full_filename, file_parts, ".")
               filename = file_parts[1]
-
-              # Determine extension
-              if (length(file_parts) > 1) {
-                  extension = "." file_parts[2]
-              } else {
-                  if (platform == "\"Linux\"") {
-                      extension = ".x86_64"
-                  } else if (platform == "\"macOS\"") {
-                      extension = ".zip"
-                  } else if (platform == "\"Web\"") {
-                      extension = ".html"
-                  } else if (platform == "\"Windows Desktop\"") {
-                      extension = ".exe"
-                  }
-              }
-
-              # Output JSON object for the platform
-              if (!first) {
-                  print ","
-              }
-              first = 0
-              gsub("\"", "\\\"", platform)  # Escape double quotes for JSON
-              print "{\"platform\": " platform ", \"file\": \"" filename "\", \"ext\": \"" extension "\"}"
+              extension = (length(file_parts) > 1) ? "." file_parts[2] : (platform == "\"Linux\"") ? ".x86_64" : (platform == "\"macOS\"") ? ".zip" : (platform == "\"Web\"") ? ".html" : (platform == "\"Windows Desktop\"") ? ".exe" : ""
+              print "{\"platform\": " platform ", \"file\": \"" filename "\", \"ext\": \"" extension "\""
           }
           END {
-            print "]"
+              if (platform) {
+                  print "}"
+              }
+              print "]"
           }' export_presets.cfg > matrix.json
-          escaped_matrix=$(jq -Rs . < matrix.json)
 
-          # Write the escaped matrix to the GITHUB_OUTPUT file
-          echo "matrix=$escaped_matrix" | tee -a $GITHUB_OUTPUT
+          # Escape and output
+          escaped_matrix=$(jq -Rs . < matrix.json)
+          echo "matrix=$escaped_matrix" >> $GITHUB_OUTPUT
+          echo $escaped_matrix
       - name: Matrix
         id: matrix
         run: echo "matrix=$(cat matrix.json)" >> $GITHUB_OUTPUT
