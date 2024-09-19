@@ -51,11 +51,13 @@ jobs:
           awk -F= '
           BEGIN {
               print "["
+              first = 1
           }
            /^\[preset/ {
-              if (platform) {
+              if (!first) {
                   print "},"
               }
+              first = 0
               platform=""
               export_path=""
           }
@@ -88,13 +90,13 @@ jobs:
               }
               print "]"
           }' export_presets.cfg > matrix.json
-
+          
           # Escape the JSON and write it to GITHUB_OUTPUT
           escaped_matrix=$(jq -Rs . < matrix.json)
-
+          
           # Output the escaped matrix for inspection
           echo "Final Matrix: $escaped_matrix"
-
+          
           # Write to GITHUB_OUTPUT
           echo "matrix=$escaped_matrix" >> $GITHUB_OUTPUT
       - name: Matrix
