@@ -52,14 +52,13 @@ jobs:
           awk -F= '
           BEGIN {
               print "["
-              first = 1
           }
            /^\[preset/ {
-              if (!first) {
+              if (platform) {
                   print "},"
               }
-              first = 0
               platform=""
+              export_path=""
           }
            /^\s*platform/ {
               platform=$2
@@ -82,27 +81,18 @@ jobs:
               split(full_filename, file_parts, ".")
               filename = file_parts[1]
               extension = (length(file_parts) > 1) ? "." file_parts[2] : (platform == "\"Linux\"") ? ".x86_64" : (platform == "\"macOS\"") ? ".zip" : (platform == "\"Web\"") ? ".html" : (platform == "\"Windows Desktop\"") ? ".exe" : ""
-
-              # Print without trailing commas
-              if (first) {
-                  first = 0
-              } else {
-                  print ","
-              }
               print "{\"platform\": " platform ", \"file\": \"" filename "\", \"ext\": \"" extension "\""
           }
           END {
-              print "}"
+              if (platform) {
+                  print "}"
+              }
               print "]"
-          }' export_presets.cfg > matrix.json
-
-          # Escape the JSON and write it to GITHUB_OUTPUT
-          escaped_matrix=$(jq -Rs . < matrix.json | tr -d '\n')
-
-          # Output the escaped matrix for inspection
+          }' export_presets.cfg | jq -Rs '.' > matrix.json
+          
+          # Escape and output
+          escaped_matrix=$(jq -Rs . < matrix.json)
           echo "Final Matrix: $escaped_matrix"
-
-          # Write to GITHUB_OUTPUT
           echo "matrix=$escaped_matrix" >> $GITHUB_OUTPUT
   Build:
     needs: [Setup, Parse]
