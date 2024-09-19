@@ -56,7 +56,12 @@ jobs:
             defaults["Windows Desktop"]="DEFAULT_WINDOWS_PATH"
           }
           /^\[preset/ {
-            preset=$0
+            # Start new preset section
+            if (platform && export_path == "") {
+              export_path=defaults[platform] ? defaults[platform] : "UNKNOWN_PATH"
+              print "Platform: " platform ", Export Path: " export_path
+            }
+            platform=""
             export_path=""
           }
           /^\s*platform/ {
@@ -66,10 +71,9 @@ jobs:
             export_path=$2
           }
           END {
-            if (platform) {
-              if (export_path == "") {
-                export_path=defaults[platform] ? defaults[platform] : "UNKNOWN_PATH"
-              }
+            # Handle the last preset section
+            if (platform && export_path == "") {
+              export_path=defaults[platform] ? defaults[platform] : "UNKNOWN_PATH"
               print "Platform: " platform ", Export Path: " export_path
             }
           }' export_presets.cfg
