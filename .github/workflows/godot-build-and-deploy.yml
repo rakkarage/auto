@@ -47,53 +47,40 @@ jobs:
       - name: Parse
         id: parse
         run: |
-         awk -F= '
-         /^\[preset/ {preset=$0}
-         /^\s*platform/ {platform=$2}
-         /^\s*export_path/ {
-             path = $2
-             if (path == "\"\"") {
-                 # Set default value if path is empty based on platform
-                 if (platform == "\"Linux\"") {
-                     path = "default_path/filename.x86_64"
-                 } else if (platform == "\"macOS\"") {
-                     path = "default_path/filename.zip"
-                 } else if (platform == "\"Web\"") {
-                     path = "default_path/index.html"
-                 } else if (platform == "\"Windows Desktop\"") {
-                     path = "default_path/filename.exe"
-                 }
-             }
+          awk -F= '
+          BEGIN {
+            print "["
+          }
+          /^\[preset/ {preset=$0}
+          /^\s*platform/ {platform=$2}
+          /^\s*export_path/ {
+              path = $2
+              if (path == "\"\"") {
+                  # Set default value if path is empty based on platform
+                  if (platform == "\"Linux\"") {
+                      path = "default_path/filename.x86_64"
+                  } else if (platform == "\"macOS\"") {
+                      path = "default_path/filename.zip"
+                  } else if (platform == "\"Web\"") {
+                      path = "default_path/index.html"
+                  } else if (platform == "\"Windows Desktop\"") {
+                      path = "default_path/filename.exe"
+                  }
+              }
 
-             # Extract filename and extension from the path
-             split(path, arr, "/")
-             full_filename = arr[length(arr)]
+              # Extract filename and extension
+              split(path, arr, "/")
+              full_filename = arr[length(arr)]
+              split(full_filename, file_parts, ".")
+              filename = file_parts[1]
+              extension = (length(file_parts) > 1) ? "." file_parts[2] : ".ext"
 
-             # Extract filename and extension
-             split(full_filename, file_parts, ".")
-             filename = file_parts[1]
-
-             # Determine extension
-             if (length(file_parts) > 1) {
-                 extension = "." file_parts[2]
-             } else {
-                 # Set default extension based on platform if no extension in the path
-                 if (platform == "\"Linux\"") {
-                     extension = ".x86_64"
-                 } else if (platform == "\"macOS\"") {
-                     extension = ".zip"
-                 } else if (platform == "\"Web\"") {
-                     extension = ".html"
-                 } else if (platform == "\"Windows Desktop\"") {
-                     extension = ".exe"
-                 } else {
-                     extension = ""
-                 }
-             }
-
-             # Print the final result
-             print "Platform: " platform ", Export Path: " path ", Filename: " filename ", Extension: " extension
-         }' export_presets.cfg
+              # Print output as a JSON-like object
+              print "{ \"platform\": " platform ", \"file\": \"" filename "\", \"ext\": \"" extension "\" },"
+          }
+          END {
+            print "]"
+          }' export_presets.cfg | tee matrix.json
     outputs:
       presets: ${{ steps.parse.outputs.presets }}
   Build:
