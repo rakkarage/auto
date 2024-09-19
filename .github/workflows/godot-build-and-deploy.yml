@@ -51,8 +51,8 @@ jobs:
           awk -F= '
           BEGIN {
             print "["
+            first = 1
           }
-          # Match the relevant lines in export_presets.cfg
           /^\[preset/ {preset=$0}
           /^\s*platform/ {platform=$2}
           /^\s*export_path/ {
@@ -91,13 +91,21 @@ jobs:
                   }
               }
 
-              # Output JSON object for the platform, escaping quotes for GitHub Actions
+              # Output JSON object for the platform
+              if (!first) {
+                  print ","
+              }
+              first = 0
               gsub("\"", "\\\"", platform)  # Escape double quotes for JSON
-              print "{\"platform\": " platform ", \"file\": \"" filename "\", \"ext\": \"" extension "\"},"
+              print "{\"platform\": " platform ", \"file\": \"" filename "\", \"ext\": \"" extension "\"}"
           }
           END {
             print "]"
-          }' export_presets.cfg | sed '$ s/,$//' > matrix.json
+          }' export_presets.cfg > matrix.json
+          escaped_matrix=$(jq -Rs . < matrix.json)
+
+          # Write the escaped matrix to the GITHUB_OUTPUT file
+          echo "matrix=$escaped_matrix" | tee -a $GITHUB_OUTPUT
       - name: Matrix
         id: matrix
         run: echo "matrix=$(cat matrix.json)" >> $GITHUB_OUTPUT
