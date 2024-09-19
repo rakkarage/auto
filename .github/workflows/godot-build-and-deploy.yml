@@ -66,15 +66,15 @@ jobs:
                       path = "default_path/filename.exe"
                   }
               }
-          
+
               # Extract filename and extension from the path
               split(path, arr, "/")
               full_filename = arr[length(arr)]
-          
+
               # Extract filename and extension
               split(full_filename, file_parts, ".")
               filename = file_parts[1]
-          
+
               # Determine extension
               if (length(file_parts) > 1) {
                   extension = "." file_parts[2]
@@ -92,17 +92,10 @@ jobs:
                       extension = ""
                   }
               }
-          
+
               # Print the final result
               print "Platform: " platform ", Export Path: " path ", Filename: " filename ", Extension: " extension
-          }' export_presets.cfg | jq -c '.' > matrix.json
-
-          # Read and escape the JSON for GitHub Actions
-          escaped_matrix=$(jq -R . < matrix.json)
-          echo "Final Matrix: $escaped_matrix"  # This should print a single line
-
-          # Write the escaped matrix to GITHUB_OUTPUT
-          echo "matrix=$escaped_matrix" >> $GITHUB_OUTPUT
+          }' export_presets.cfg
   Build:
     needs: [Setup, Parse]
     runs-on: ubuntu-latest
