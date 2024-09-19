@@ -88,11 +88,13 @@ jobs:
                   print "}"
               }
               print "]"
-          }' export_presets.cfg | jq -Rs '.' > matrix.json
+          }' export_presets.cfg | jq -c '.' > matrix.json
           
-          # Escape and output
-          escaped_matrix=$(jq -Rs . < matrix.json)
+          # Read the JSON and escape it for GitHub Actions
+          escaped_matrix=$(jq -R . < matrix.json)
           echo "Final Matrix: $escaped_matrix"
+          
+          # Write the escaped matrix to GITHUB_OUTPUT
           echo "matrix=$escaped_matrix" >> $GITHUB_OUTPUT
   Build:
     needs: [Setup, Parse]
