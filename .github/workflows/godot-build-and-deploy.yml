@@ -55,7 +55,6 @@ jobs:
           /^\s*export_path/ {
               path = $2
               if (path == "\"\"") {
-                  # Set default value if path is empty based on platform
                   if (platform == "\"Linux\"") {
                       path = "default_path/filename.x86_64"
                   } else if (platform == "\"macOS\"") {
@@ -67,19 +66,14 @@ jobs:
                   }
               }
 
-              # Extract filename and extension from the path
               split(path, arr, "/")
               full_filename = arr[length(arr)]
-
-              # Extract filename and extension
               split(full_filename, file_parts, ".")
               filename = file_parts[1]
 
-              # Determine extension
               if (length(file_parts) > 1) {
                   extension = "." file_parts[2]
               } else {
-                  # Set default extension based on platform if no extension in the path
                   if (platform == "\"Linux\"") {
                       extension = ".x86_64"
                   } else if (platform == "\"macOS\"") {
@@ -93,10 +87,10 @@ jobs:
                   }
               }
 
-              # Print the final result
-              print "Platform: " platform ", Export Path: " path ", Filename: " filename ", Extension: " extension
+              # Print the final result in JSON format
+              printf("{\"Platform\": %s, \"Export Path\": %s, \"Filename\": %s, \"Extension\": %s}\n", platform, path, filename, extension)
           }' export_presets.cfg
-  Build:
+Build:
     needs: [Setup, Parse]
     runs-on: ubuntu-latest
     permissions:
