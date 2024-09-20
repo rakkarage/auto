@@ -65,11 +65,7 @@ jobs:
             full_filename=arr[length(arr)]
             split(full_filename, file_parts, ".")
             filename=file_parts[1]
-            extension = (length(file_parts)>1) ? "."file_parts[2] :
-                        (platform=="Linux") ? ".x86_64" :
-                        (platform=="macOS") ? ".zip" :
-                        (platform=="Web") ? ".html" :
-                        (platform=="Windows Desktop") ? ".exe" : ""
+            extension=file_parts[2]
             gsub(/"/, "\\\"", path)
             gsub(/"/, "\\\"", filename)
             printf "%s{\"target\":\"%s\",\"file\":\"%s\",\"ext\":\"%s\"}",
