@@ -84,9 +84,6 @@ jobs:
             echo "web=false" >> $GITHUB_OUTPUT
             echo "Web target not found."
           fi
-      - name: Debug
-        run: |
-          echo "Web output: ${{ steps.check.outputs.web }}"
   Build:
     needs: [Setup, Parse]
     runs-on: ubuntu-latest
