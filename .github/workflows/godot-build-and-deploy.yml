@@ -98,25 +98,6 @@ jobs:
             printf "{\"target\": \"%s\", \"file\": \"%s\", \"ext\": \"%s\"}", platform, filename, extension
           }
           END { printf "]" }' export_presets.cfg)
-
-          # Print the output for debugging
-          echo "$awk_output"
-
-          # Save the output directly to matrix.json (no need for jq here)
-          echo -n "$awk_output" > matrix.json
-
-          # Display the contents of matrix.json for debugging
-          cat matrix.json
-
-          # Escape the matrix content without adding a newline
-          escaped_matrix=$(jq -cRs . < matrix.json)
-
-          # Output the escaped matrix for debugging
-          echo
-          echo "Final Matrix: $escaped_matrix"
-
-          # Write the escaped matrix to GITHUB_OUTPUT for GitHub Actions
-          # echo "matrix=$escaped_matrix" >> $GITHUB_OUTPUT
           echo "matrix=$(echo "$awk_output" | jq -c .)" >> $GITHUB_OUTPUT
   Build:
     needs: [Setup, Parse]
