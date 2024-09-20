@@ -49,25 +49,21 @@ jobs:
       - name: Parse
         id: matrix
         run: |
-          # Use awk to process export_presets.cfg and format the output correctly in a JSON array
+          # Use awk to process export_presets.cfg and format the output correctly in JSON
           awk_output=$(awk -F= '
-          BEGIN {
-              print "["
-              first = 1
-          }
           /^\[preset/ {preset=$0}
           /^\s*platform/ {platform=$2}
           /^\s*export_path/ {
               path = $2
               if (path == "\"\"") {
-                  if (platform == "Linux") {
-                      path = "\"default_path/filename.x86_64\""
-                  } else if (platform == "macOS") {
-                      path = "\"default_path/filename.zip\""
-                  } else if (platform == "Web") {
-                      path = "\"default_path/index.html\""
-                  } else if (platform == "Windows Desktop") {
-                      path = "\"default_path/filename.exe\""
+                  if (platform == "\"Linux\"") {
+                      path = "default_path/filename.x86_64"
+                  } else if (platform == "\"macOS\"") {
+                      path = "default_path/filename.zip"
+                  } else if (platform == "\"Web\"") {
+                      path = "default_path/index.html"
+                  } else if (platform == "\"Windows Desktop\"") {
+                      path = "default_path/filename.exe"
                   }
               }
 
@@ -76,35 +72,27 @@ jobs:
               split(full_filename, file_parts, ".")
               filename = file_parts[1]
 
-              # No need to wrap the extension in extra quotes here
               if (length(file_parts) > 1) {
                   extension = "." file_parts[2]
               } else {
-                  if (platform == "Linux") {
+                  if (platform == "\"Linux\"") {
                       extension = ".x86_64"
-                  } else if (platform == "macOS") {
+                  } else if (platform == "\"macOS\"") {
                       extension = ".zip"
-                  } else if (platform == "Web") {
+                  } else if (platform == "\"Web\"") {
                       extension = ".html"
-                  } else if (platform == "Windows Desktop") {
+                  } else if (platform == "\"Windows Desktop\"") {
                       extension = ".exe"
                   } else {
                       extension = ""
                   }
               }
 
-              # If it's not the first entry, add a comma before the new JSON object
-              if (!first) {
-                  print ","
-              }
-              first = 0
-
               # Properly quote the strings in JSON format
-              printf("{\"Platform\": %s, \"Export Path\": %s, \"Filename\": \"%s\", \"Extension\": \"%s\"}\n", platform, path, filename, extension)
-          }
-          END {
-              print "\n]"
+              printf("{\"Platform\": \"%s\", \"Export Path\": \"%s\", \"Filename\": \"%s\", \"Extension\": \"%s\"}\n", substr(platform, 2, length(platform)-2), path, filename, extension)
           }' export_presets.cfg)
+
+          echo "$github.repository"
 
           # Print the output before sending it to jq
           echo "$awk_output"
