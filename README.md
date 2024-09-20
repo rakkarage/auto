@@ -10,9 +10,10 @@ This workflow is designed to automate the process of building and deploying godo
 - Parses build settings from `export_presets.cfg` to generates a custom strategy matrix to run all builds concurrently.
   - Do not need to set file names or paths just have the platform present in the file.
 - Deletes old repository GitHub Pages deployments.
-> [!WARNING]
-> old repository GitHub Pages deployments will be deleted.
 - Deploys web artifact to the repository GitHub Pages environment.
+
+> [!WARNING]
+> Old repository GitHub Pages deployments will be deleted.
 
 ## Workflow Overview
 
