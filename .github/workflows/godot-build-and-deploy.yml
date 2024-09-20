@@ -82,6 +82,9 @@ jobs:
             echo "web=false" >> $GITHUB_OUTPUT
             echo "Web target not found."
           fi
+      - name: Debug
+        run: |
+          echo "Web output: ${{ steps.web.outputs.web }}"
   Build:
     needs: [Setup, Parse]
     runs-on: ubuntu-latest
@@ -123,7 +126,7 @@ jobs:
           path: 'build/${{ matrix.target }}'
   Clean:
     needs: [Parse, Build]
-    if: needs.Parse.outputs.web == true
+    if: needs.Parse.outputs.web == 'true'
     runs-on: ubuntu-latest
     permissions:
       deployments: write
@@ -136,7 +139,7 @@ jobs:
           onlyRemoveDeployments: true
   Deploy:
     needs: [Parse, Build, Clean]
-    if: needs.Parse.outputs.web == true
+    if: needs.Parse.outputs.web == 'true'
     runs-on: ubuntu-latest
     permissions:
       pages: write
