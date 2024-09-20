@@ -49,8 +49,12 @@ jobs:
       - name: Parse
         id: matrix
         run: |
-          # Use awk to process export_presets.cfg and directly use the values with quotes as-is
+          # Use awk to process export_presets.cfg and format the output correctly in a JSON array
           awk_output=$(awk -F= '
+          BEGIN {
+              print "["
+              first = 1
+          }
           /^\[preset/ {preset=$0}
           /^\s*platform/ {platform=$2}
           /^\s*export_path/ {
@@ -66,12 +70,12 @@ jobs:
                       path = "\"default_path/filename.exe\""
                   }
               }
-          
+
               split(path, arr, "/")
               full_filename = arr[length(arr)]
               split(full_filename, file_parts, ".")
               filename = file_parts[1]
-          
+
               # No need to wrap the extension in extra quotes here
               if (length(file_parts) > 1) {
                   extension = "." file_parts[2]
@@ -88,26 +92,35 @@ jobs:
                       extension = ""
                   }
               }
-          
+
+              # If it's not the first entry, add a comma before the new JSON object
+              if (!first) {
+                  print ","
+              }
+              first = 0
+
               # Properly quote the strings in JSON format
               printf("{\"Platform\": %s, \"Export Path\": %s, \"Filename\": \"%s\", \"Extension\": \"%s\"}\n", platform, path, filename, extension)
+          }
+          END {
+              print "\n]"
           }' export_presets.cfg)
-          
+
           # Print the output before sending it to jq
           echo "$awk_output"
-          
+
           # Pipe the output to jq and save it to matrix.json
           echo "$awk_output" | jq -c '.' > matrix.json
-          
+
           # Display the contents of matrix.json for debugging
           cat matrix.json
-          
+
           # Escape the matrix content (especially if it contains multi-line strings)
           escaped_matrix=$(jq -Rs . < matrix.json)
-          
+
           # Output the escaped matrix for debugging
           echo "Final Matrix: $escaped_matrix"
-          
+
           # Write the escaped matrix to GITHUB_OUTPUT for GitHub Actions
           echo "matrix=$escaped_matrix" >> $GITHUB_OUTPUT
   Build:
