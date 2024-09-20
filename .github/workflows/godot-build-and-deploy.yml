@@ -50,7 +50,7 @@ jobs:
         id: matrix
         run: |
           awk_output=$(awk -F= '
-          BEGIN { print "[" }
+          BEGIN { printf "[" ; first = 1 }
           /^\[preset/ {preset=$0}
           /^\s*platform/ {platform=$2}
           /^\s*export_path/ {
@@ -90,7 +90,12 @@ jobs:
             gsub(/^"|"$/, "", platform)
             gsub(/"/, "\\\"", path)
             gsub(/"/, "\\\"", filename)
-            printf("%s{\"Platform\": \"%s\", \"Export Path\": \"%s\", \"Filename\": \"%s\", \"Extension\": \"%s\"}", (NR>4?",":""), platform, path, filename, extension)
+            if (first) {
+              first = 0
+            } else {
+              printf ","
+            }
+            printf "{\"Platform\": \"%s\", \"Export Path\": \"%s\", \"Filename\": \"%s\", \"Extension\": \"%s\"}", platform, path, filename, extension
           }
           END { print "]" }' export_presets.cfg)
           
