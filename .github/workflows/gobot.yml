@@ -96,7 +96,7 @@ jobs:
         run: ./godot --headless --verbose --editor --quit
       - name: Export
         run: |
-          mkdir -v -p 'build/${{ matrix.dir }}'
+          mkdir -p 'build/${{ matrix.dir }}'
           ./godot --headless --verbose --export-release '${{ matrix.target }}' 'build/${{ matrix.dir }}/${{ matrix.file }}.${{ matrix.ext }}'
       - name: Upload Web
         if: matrix.target == 'Web'
