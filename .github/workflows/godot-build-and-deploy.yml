@@ -71,8 +71,17 @@ jobs:
             first=0
           }
           END { print "]" }' export_presets.cfg)
-          echo "matrix=$(echo "$awk_output" | jq -c .)" >> $GITHUB_OUTPUT
+
+          #   matrix_output=$(echo "$awk_output" | jq -c .)
+          echo "matrix=$awk_output" >> $GITHUB_OUTPUT
+
+          # Echo to step summary
+          echo "### Export Matrix" >> $GITHUB_STEP_SUMMARY
+          echo "$matrix_output" >> $GITHUB_STEP_SUMMARY
           echo $awk_output
+
+          #   echo "matrix=$(echo "$awk_output" | jq -c .)" >> $GITHUB_OUTPUT
+          #   echo $awk_output
       - name: Check
         id: check
         run: |
