@@ -95,7 +95,7 @@ jobs:
             } else {
               printf ","
             }
-            printf "{\"Platform\": \"%s\", \"Filename\": \"%s\", \"Extension\": \"%s\"}", platform, filename, extension
+            printf "{\"target\": \"%s\", \"file\": \"%s\", \"ext\": \"%s\"}", platform, filename, extension
           }
           END { printf "]" }' export_presets.cfg)
 
