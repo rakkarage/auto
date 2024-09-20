@@ -75,8 +75,10 @@ jobs:
         run: |
           if echo "${{ steps.matrix.outputs.matrix }}" | grep -q '"target":"Web"'; then
             echo "web=true" >> $GITHUB_OUTPUT
+            echo "Web target found."
           else
             echo "web=false" >> $GITHUB_OUTPUT
+            echo "Web target not found."
           fi
   Build:
     needs: [Setup, Parse]
