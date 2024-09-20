@@ -69,7 +69,8 @@ jobs:
       - name: Check
         id: check
         run: |
-          if echo "${{ steps.matrix.outputs.matrix }}" | grep -q '"target":"Web"'; then
+          matrix_output='${{ steps.matrix.outputs.matrix }}'
+          if echo "$matrix_output" | grep -q '"target":"Web"'; then
             echo "web=true" >> $GITHUB_OUTPUT
           else
             echo "web=false" >> $GITHUB_OUTPUT
