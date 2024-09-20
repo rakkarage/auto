@@ -49,6 +49,7 @@ jobs:
       - name: Parse
         id: matrix
         run: |
+          # Use awk to process export_presets.cfg and format the output correctly in JSON
           awk -F= '
           /^\[preset/ {preset=$0}
           /^\s*platform/ {platform=$2}
@@ -87,12 +88,20 @@ jobs:
                   }
               }
 
-              # Print the final result in JSON format
-              printf("{\"Platform\": %s, \"Export Path\": %s, \"Filename\": %s, \"Extension\": %s}\n", platform, path, filename, extension)
+              # Properly quote the strings in JSON format
+              printf("{\"Platform\": \"%s\", \"Export Path\": \"%s\", \"Filename\": \"%s\", \"Extension\": \"%s\"}\n", platform, path, filename, extension)
           }' export_presets.cfg | jq -c '.' > matrix.json
+
+          # Display the contents of matrix.json for debugging
           cat matrix.json
+
+          # Escape the matrix content (especially if it contains multi-line strings)
           escaped_matrix=$(jq -Rs . < matrix.json)
+
+          # Output the escaped matrix for debugging
           echo "Final Matrix: $escaped_matrix"
+
+          # Write the escaped matrix to GITHUB_OUTPUT for GitHub Actions
           echo "matrix=$escaped_matrix" >> $GITHUB_OUTPUT
   Build:
     needs: [Setup, Parse]
