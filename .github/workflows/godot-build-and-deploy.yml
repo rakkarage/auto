@@ -61,10 +61,13 @@ jobs:
                      (platform == "Web") ? "index.html" :
                      (platform == "Windows Desktop") ? "${{ github.event.repository.name }}.exe" : ""
             }
+            platform_dir = (platform == "Windows Desktop") ? "Windows" :
+                           (platform == "Linux/X11") ? "Linux" :
+                           platform
             n = split(path, arr, "/")
             split(arr[n], file_parts, ".")
-            printf "%s{\"target\":\"%s\",\"file\":\"%s\",\"ext\":\"%s\"}",
-                   (first ? "" : ","), platform, file_parts[1], file_parts[2]
+            printf "%s{\"target\":\"%s\",\"dir\":\"%s\",\"file\":\"%s\",\"ext\":\"%s\"}",
+                   (first ? "" : ","), platform, platform_dir, file_parts[1], file_parts[2]
             first=0
           }
           END { print "]" }' export_presets.cfg)
