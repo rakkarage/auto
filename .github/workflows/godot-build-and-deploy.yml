@@ -50,54 +50,33 @@ jobs:
         id: matrix
         run: |
           awk_output=$(awk -F= '
-          BEGIN { printf "[" ; first = 1 }
+          BEGIN {printf "["; first=1}
           /^\[preset/ {preset=$0}
-          /^\s*platform/ {platform=$2}
+          /^\s*platform/ {platform=$2; gsub(/^"|"$/, "", platform)}
           /^\s*export_path/ {
-            path = $2
-            gsub(/^"|"$/, "", path)  # Remove surrounding quotes
-            if (path == "") {
-              if (platform == "\"Linux\"") {
-                path = "default_path/filename.x86_64"
-              } else if (platform == "\"macOS\"") {
-                path = "default_path/filename.zip"
-              } else if (platform == "\"Web\"") {
-                path = "default_path/index.html"
-              } else if (platform == "\"Windows Desktop\"") {
-                path = "default_path/filename.exe"
-              }
+            path=$2; gsub(/^"|"$/, "", path)
+            if (path=="") {
+              path = (platform=="Linux") ? "default_path/filename.x86_64" :
+                     (platform=="macOS") ? "default_path/filename.zip" :
+                     (platform=="Web") ? "default_path/index.html" :
+                     (platform=="Windows Desktop") ? "default_path/filename.exe" : ""
             }
             split(path, arr, "/")
-            full_filename = arr[length(arr)]
+            full_filename=arr[length(arr)]
             split(full_filename, file_parts, ".")
-            filename = file_parts[1]
-            if (length(file_parts) > 1) {
-              extension = "." file_parts[2]
-            } else {
-              if (platform == "\"Linux\"") {
-                extension = ".x86_64"
-              } else if (platform == "\"macOS\"") {
-                extension = ".zip"
-              } else if (platform == "\"Web\"") {
-                extension = ".html"
-              } else if (platform == "\"Windows Desktop\"") {
-                extension = ".exe"
-              } else {
-                extension = ""
-              }
-            }
-            # Remove quotes from platform and properly escape JSON strings
-            gsub(/^"|"$/, "", platform)
+            filename=file_parts[1]
+            extension = (length(file_parts)>1) ? "."file_parts[2] :
+                        (platform=="Linux") ? ".x86_64" :
+                        (platform=="macOS") ? ".zip" :
+                        (platform=="Web") ? ".html" :
+                        (platform=="Windows Desktop") ? ".exe" : ""
             gsub(/"/, "\\\"", path)
             gsub(/"/, "\\\"", filename)
-            if (first) {
-              first = 0
-            } else {
-              printf ","
-            }
-            printf "{\"target\": \"%s\", \"file\": \"%s\", \"ext\": \"%s\"}", platform, filename, extension
+            printf "%s{\"target\":\"%s\",\"file\":\"%s\",\"ext\":\"%s\"}",
+                   (first ? "" : ","), platform, filename, extension
+            first=0
           }
-          END { printf "]" }' export_presets.cfg)
+          END {print "]"}' export_presets.cfg)
           echo "matrix=$(echo "$awk_output" | jq -c .)" >> $GITHUB_OUTPUT
   Build:
     needs: [Setup, Parse]
