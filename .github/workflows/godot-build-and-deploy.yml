@@ -123,7 +123,7 @@ jobs:
           path: 'build/${{ matrix.target }}'
   Clean:
     needs: [Parse, Build]
-    if: needs.Parse.outputs.web == 'true'
+    if: needs.Parse.outputs.web == true
     runs-on: ubuntu-latest
     permissions:
       deployments: write
@@ -136,7 +136,7 @@ jobs:
           onlyRemoveDeployments: true
   Deploy:
     needs: [Parse, Build, Clean]
-    if: needs.Parse.outputs.web == 'true'
+    if: needs.Parse.outputs.web == true
     runs-on: ubuntu-latest
     permissions:
       pages: write
