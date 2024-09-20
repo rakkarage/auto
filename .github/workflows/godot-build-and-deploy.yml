@@ -77,7 +77,6 @@ jobs:
         id: check
         run: |
           matrix_output='${{ steps.matrix.outputs.matrix }}'
-          echo "Matrix output: $matrix_output"
           if echo "$matrix_output" | grep -q '"target":"Web"'; then
             echo "web=true" >> $GITHUB_OUTPUT
             echo "Web target found."
