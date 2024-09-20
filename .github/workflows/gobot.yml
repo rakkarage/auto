@@ -30,7 +30,7 @@ jobs:
           curl -L -o godot.zip https://downloads.tuxfamily.org/godotengine/${GODOT_VERSION}/Godot_v${GODOT_VERSION}-stable_linux.x86_64.zip
           unzip -q godot.zip && mv Godot_v${GODOT_VERSION}-stable_linux.x86_64 godot && chmod +x godot
           curl -L -o templates.zip https://downloads.tuxfamily.org/godotengine/${GODOT_VERSION}/Godot_v${GODOT_VERSION}-stable_export_templates.tpz
-          mkdir -v -p ~/.local/share/godot/export_templates/${GODOT_VERSION}.stable && unzip -q templates.zip -d ~/.local/share/godot/export_templates/${GODOT_VERSION}.stable
+          mkdir -p ~/.local/share/godot/export_templates/${GODOT_VERSION}.stable && unzip -q templates.zip && mv templates/* ~/.local/share/godot/export_templates/${GODOT_VERSION}.stable
           curl -L -o rcedit.exe https://github.com/electron/rcedit/releases/latest/download/rcedit-x64.exe
   Parse:
     runs-on: ubuntu-latest
