@@ -22,7 +22,7 @@ jobs:
           path: |
             ./godot
             ~/.local/share/godot/export_templates/${{ env.GODOT_VERSION }}.stable
-            ./rcedit
+            ./rcedit.exe
           key: '${{ runner.os }}_Godot_${{ env.GODOT_VERSION }}'
       - name: Cache Godot
         if: steps.godot-cache.outputs.cache-hit != 'true'
@@ -43,7 +43,6 @@ jobs:
         run: |
           curl -L -o rcedit.zip https://github.com/electron/rcedit/releases/latest/download/rcedit.zip
           unzip rcedit.zip
-          chmod +x rcedit
   Parse:
     runs-on: ubuntu-latest
     outputs:
@@ -108,7 +107,7 @@ jobs:
           path: |
             ./godot
             ~/.local/share/godot/export_templates/${{ env.GODOT_VERSION }}.stable
-            ./rcedit
+            ./rcedit.exe
           key: '${{ runner.os }}_Godot_${{ env.GODOT_VERSION }}'
       - name: Import
         run: ./godot --headless --verbose --editor --quit
