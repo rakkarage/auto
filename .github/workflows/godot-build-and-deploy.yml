@@ -68,6 +68,7 @@ jobs:
           }
           END { print "]" }' export_presets.cfg)
           echo "matrix=$(echo "$awk_output" | jq -c .)" >> $GITHUB_OUTPUT
+          echo $awk_output
   Build:
     needs: [Setup, Parse]
     runs-on: ubuntu-latest
@@ -93,8 +94,8 @@ jobs:
         run: ./godot --headless --verbose --editor --quit
       - name: Export
         run: |
-          mkdir -v -p build/${{ matrix.target }}
-          ./godot --headless --verbose --export-release '${{ matrix.target }}' build/${{ matrix.target }}/${{ matrix.file }}.${{ matrix.ext }}
+          mkdir -v -p 'build/${{ matrix.target }}'
+          ./godot --headless --verbose --export-release '${{ matrix.target }}' 'build/${{ matrix.target }}/${{ matrix.file }}.${{ matrix.ext }}'
       - name: Upload Web
         if: matrix.target == 'Web'
         uses: actions/upload-pages-artifact@v3
