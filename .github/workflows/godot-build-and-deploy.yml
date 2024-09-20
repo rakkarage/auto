@@ -87,6 +87,11 @@ jobs:
       matrix:
         include: ${{ fromJson(needs.Parse.outputs.matrix) }}
     steps:
+      - name: Debug Matrix
+        run: |
+          echo ${{ matrix.platform }}
+          echo ${{ matrix.file }}
+          echo ${{ matrix.ext }}
       - name: Checkout
         uses: actions/checkout@v4
         with:
