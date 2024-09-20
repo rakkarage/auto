@@ -77,7 +77,7 @@ jobs:
 
           # Echo to step summary
           echo "### Export Matrix" >> $GITHUB_STEP_SUMMARY
-          echo "$matrix_output" >> $GITHUB_STEP_SUMMARY
+          echo "$awk_output" >> $GITHUB_STEP_SUMMARY
           echo $awk_output
 
           #   echo "matrix=$(echo "$awk_output" | jq -c .)" >> $GITHUB_OUTPUT
