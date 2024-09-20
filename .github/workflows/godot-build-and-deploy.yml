@@ -74,6 +74,7 @@ jobs:
           }
           END {print "]"}' export_presets.cfg)
           echo "matrix=$(echo "$awk_output" | jq -c .)" >> $GITHUB_OUTPUT
+          echo $GITHUB_OUTPUT
   Build:
     needs: [Setup, Parse]
     runs-on: ubuntu-latest
