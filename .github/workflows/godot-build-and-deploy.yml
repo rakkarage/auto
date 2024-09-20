@@ -92,6 +92,8 @@ jobs:
               printf("{\"Platform\": \"%s\", \"Export Path\": \"%s\", \"Filename\": \"%s\", \"Extension\": \"%s\"}\n", substr(platform, 2, length(platform)-2), path, filename, extension)
           }' export_presets.cfg)
 
+          echo "$github.repository"
+
           # Print the output before sending it to jq
           echo "$awk_output"
 
@@ -109,7 +111,6 @@ jobs:
 
           # Write the escaped matrix to GITHUB_OUTPUT for GitHub Actions
           echo "matrix=$escaped_matrix" >> $GITHUB_OUTPUT
-          echo {$github.repository}
   Build:
     needs: [Setup, Parse]
     runs-on: ubuntu-latest
