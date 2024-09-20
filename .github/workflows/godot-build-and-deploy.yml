@@ -112,6 +112,7 @@ jobs:
           escaped_matrix=$(jq -cRs . < matrix.json)
 
           # Output the escaped matrix for debugging
+          echo
           echo "Final Matrix: $escaped_matrix"
 
           # Write the escaped matrix to GITHUB_OUTPUT for GitHub Actions
