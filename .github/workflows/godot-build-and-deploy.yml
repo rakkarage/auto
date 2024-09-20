@@ -41,6 +41,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       matrix: ${{ steps.matrix.outputs.matrix }}
+      web: ${{ steps.matrix.outputs.web }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -69,6 +70,13 @@ jobs:
           END { print "]" }' export_presets.cfg)
           echo "matrix=$(echo "$awk_output" | jq -c .)" >> $GITHUB_OUTPUT
           echo $awk_output
+      - name: Check
+        id: web
+        run: |
+          if echo "${awk_output}" | grep -q '"target":"Web"'; then
+            echo "web=true" >> $GITHUB_OUTPUT
+          else
+            echo "web=false" >> $GITHUB_OUTPUT
   Build:
     needs: [Setup, Parse]
     runs-on: ubuntu-latest
@@ -121,7 +129,8 @@ jobs:
           environment: github-pages
           onlyRemoveDeployments: true
   Deploy:
-    needs: [Build, Clean]
+    needs: [Parse, Build, Clean]
+    if: needs.Parse.outputs.web == 'true'
     runs-on: ubuntu-latest
     permissions:
       pages: write
