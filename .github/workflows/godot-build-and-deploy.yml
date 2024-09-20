@@ -89,7 +89,7 @@ jobs:
               }
 
               # Properly quote the strings in JSON format
-              printf("{\"Platform\": \"%s\", \"Export Path\": \"%s\", \"Filename\": \"%s\", \"Extension\": \"%s\"}\n", substr(platform, 2, length(platform)-2), path, filename, extension)
+              printf("{\"Platform\": \"%s\", \"Export Path\": \"%s\", \"Filename\": \"%s\", \"Extension\": \"%s\"}\n", substr(platform, 2, length(platform)-2), substr(path, 2, length(path)-2), filename, extension)
           }' export_presets.cfg)
 
           echo "$github.repository"
