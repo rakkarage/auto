@@ -118,7 +118,8 @@ jobs:
           name: '${{ github.event.repository.name }}_${{ matrix.target }}_Godot_${{ env.GODOT_VERSION }}'
           path: 'build/${{ matrix.target }}'
   Clean:
-    needs: Build
+    needs: [Parse, Build]
+    if: needs.Parse.outputs.web == 'true'
     runs-on: ubuntu-latest
     permissions:
       deployments: write
