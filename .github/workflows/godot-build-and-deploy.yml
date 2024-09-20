@@ -41,7 +41,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       matrix: ${{ steps.matrix.outputs.matrix }}
-      web: ${{ steps.matrix.outputs.web }}
+      web: ${{ steps.check.outputs.web }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -71,7 +71,7 @@ jobs:
           echo "matrix=$(echo "$awk_output" | jq -c .)" >> $GITHUB_OUTPUT
           echo $awk_output
       - name: Check
-        id: web
+        id: check
         run: |
           matrix_output='${{ steps.matrix.outputs.matrix }}'
           echo "Matrix output: $matrix_output"
@@ -84,7 +84,7 @@ jobs:
           fi
       - name: Debug
         run: |
-          echo "Web output: ${{ steps.web.outputs.web }}"
+          echo "Web output: ${{ steps.check.outputs.web }}"
   Build:
     needs: [Setup, Parse]
     runs-on: ubuntu-latest
