@@ -100,13 +100,13 @@ jobs:
         if: matrix.target == 'Web'
         uses: actions/upload-pages-artifact@v3
         with:
-          name: '${{ matrix.file }}_${{ matrix.target }}_Godot_${{ env.GODOT_VERSION }}'
+          name: '${{ github.event.repository.name }}_${{ matrix.target }}_Godot_${{ env.GODOT_VERSION }}'
           path: 'build/${{ matrix.target }}'
       - name: Upload Not Web
         if: matrix.target != 'Web'
         uses: actions/upload-artifact@v4
         with:
-          name: '${{ matrix.file }}_${{ matrix.target }}_Godot_${{ env.GODOT_VERSION }}'
+          name: '${{ github.event.repository.name }}_${{ matrix.target }}_Godot_${{ env.GODOT_VERSION }}'
           path: 'build/${{ matrix.target }}'
   Clean:
     needs: Build
