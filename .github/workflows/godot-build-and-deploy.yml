@@ -55,10 +55,10 @@ jobs:
           /^\s*export_path/ {
             path=$2; gsub(/^"|"$/, "", path)
             if (path=="") {
-              path = (platform == "Linux") ? "default_path/filename.x86_64" :
-                     (platform == "macOS") ? "default_path/filename.zip" :
-                     (platform == "Web") ? "default_path/index.html" :
-                     (platform == "Windows Desktop") ? "default_path/filename.exe" : ""
+              path = (platform == "Linux") ? "${{ github.event.repository.name }}.x86_64" :
+                     (platform == "macOS") ? "${{ github.event.repository.name }}.zip" :
+                     (platform == "Web") ? "index.html" :
+                     (platform == "Windows Desktop") ? "${{ github.event.repository.name }}.exe" : ""
             }
             n = split(path, arr, "/")
             split(arr[n], file_parts, ".")
@@ -68,7 +68,6 @@ jobs:
           }
           END { print "]" }' export_presets.cfg)
           echo "matrix=$(echo "$awk_output" | jq -c .)" >> $GITHUB_OUTPUT
-          echo $awk_output
   Build:
     needs: [Setup, Parse]
     runs-on: ubuntu-latest
@@ -78,11 +77,6 @@ jobs:
       matrix:
         include: ${{ fromJson(needs.Parse.outputs.matrix) }}
     steps:
-      - name: Debug Matrix
-        run: |
-          echo ${{ matrix.platform }}
-          echo ${{ matrix.file }}
-          echo ${{ matrix.ext }}
       - name: Checkout
         uses: actions/checkout@v4
         with:
@@ -105,13 +99,13 @@ jobs:
         if: matrix.target == 'Web'
         uses: actions/upload-pages-artifact@v3
         with:
-          name: '${{ github.event.repository.name }}_${{ matrix.target }}_Godot_${{ env.GODOT_VERSION }}'
+          name: '${{ matrix.file }}_${{ matrix.target }}_Godot_${{ env.GODOT_VERSION }}'
           path: 'build/${{ matrix.target }}'
       - name: Upload Not Web
         if: matrix.target != 'Web'
         uses: actions/upload-artifact@v4
         with:
-          name: '${{ github.event.repository.name }}_${{ matrix.target }}_Godot_${{ env.GODOT_VERSION }}'
+          name: '${{ matrix.file }}_${{ matrix.target }}_Godot_${{ env.GODOT_VERSION }}'
           path: 'build/${{ matrix.target }}'
   Clean:
     needs: Build
