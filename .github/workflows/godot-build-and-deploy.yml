@@ -77,6 +77,7 @@ jobs:
             echo "web=true" >> $GITHUB_OUTPUT
           else
             echo "web=false" >> $GITHUB_OUTPUT
+          fi
   Build:
     needs: [Setup, Parse]
     runs-on: ubuntu-latest
