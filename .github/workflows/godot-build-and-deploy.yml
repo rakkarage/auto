@@ -116,7 +116,8 @@ jobs:
           echo "Final Matrix: $escaped_matrix"
 
           # Write the escaped matrix to GITHUB_OUTPUT for GitHub Actions
-          echo "matrix=$escaped_matrix" >> $GITHUB_OUTPUT
+          # echo "matrix=$escaped_matrix" >> $GITHUB_OUTPUT
+          echo "matrix=$(echo "$awk_output" | jq -c .)" >> $GITHUB_OUTPUT
   Build:
     needs: [Setup, Parse]
     runs-on: ubuntu-latest
