@@ -56,64 +56,43 @@ jobs:
           /^\s*export_path/ {
             path = $2
             gsub(/^"|"$/, "", path)  # Remove surrounding quotes
-            if (path == "") {
-              if (platform == "\"Linux\"") {
-                path = "default_path/filename.x86_64"
-              } else if (platform == "\"macOS\"") {
-                path = "default_path/filename.zip"
-              } else if (platform == "\"Web\"") {
-                path = "default_path/index.html"
-              } else if (platform == "\"Windows Desktop\"") {
-                path = "default_path/filename.exe"
-              }
-            }
             split(path, arr, "/")
             full_filename = arr[length(arr)]
             split(full_filename, file_parts, ".")
             filename = file_parts[1]
             if (length(file_parts) > 1) {
-              extension = "." file_parts[2]
+              extension = file_parts[2]
             } else {
               if (platform == "\"Linux\"") {
-                extension = ".x86_64"
+                extension = "x86_64"
               } else if (platform == "\"macOS\"") {
-                extension = ".zip"
+                extension = "zip"
               } else if (platform == "\"Web\"") {
-                extension = ".html"
+                extension = "html"
               } else if (platform == "\"Windows Desktop\"") {
-                extension = ".exe"
+                extension = "exe"
               } else {
                 extension = ""
               }
             }
-            # Remove quotes from platform and properly escape JSON strings
             gsub(/^"|"$/, "", platform)
-            gsub(/"/, "\\\"", path)
             gsub(/"/, "\\\"", filename)
+            gsub(/"/, "\\\"", extension)
             if (first) {
               first = 0
             } else {
               printf ","
             }
-            printf "{\"Platform\": \"%s\", \"Export Path\": \"%s\", \"Filename\": \"%s\", \"Extension\": \"%s\"}", platform, path, filename, extension
+            # Output the new matrix format
+            printf "{\"target\": \"%s\", \"file\": \"%s\", \"ext\": \"%s\"}", platform, filename, extension
           }
           END { printf "]" }' export_presets.cfg)
 
-          # Print the output for debugging
-          echo "$awk_output"
-
-          # Save the output directly to matrix.json (no need for jq here)
+          # Save the output directly to matrix.json
           echo -n "$awk_output" > matrix.json
-
-          # Display the contents of matrix.json for debugging
-          cat matrix.json
 
           # Escape the matrix content without adding a newline
           escaped_matrix=$(jq -cRs . < matrix.json)
-
-          # Output the escaped matrix for debugging
-          echo
-          echo "Final Matrix: $escaped_matrix"
 
           # Write the escaped matrix to GITHUB_OUTPUT for GitHub Actions
           echo "matrix=$escaped_matrix" >> $GITHUB_OUTPUT
