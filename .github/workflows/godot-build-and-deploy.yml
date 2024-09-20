@@ -49,7 +49,7 @@ jobs:
       - name: Parse
         id: matrix
         run: |
-          # Use awk to process export_presets.cfg and format the output correctly in JSON
+          # Use awk to process export_presets.cfg and directly use the values with quotes as-is
           awk_output=$(awk -F= '
           /^\[preset/ {preset=$0}
           /^\s*platform/ {platform=$2}
@@ -57,13 +57,13 @@ jobs:
               path = $2
               if (path == "\"\"") {
                   if (platform == "\"Linux\"") {
-                      path = "default_path/filename.x86_64"
+                      path = "\"default_path/filename.x86_64\""
                   } else if (platform == "\"macOS\"") {
-                      path = "default_path/filename.zip"
+                      path = "\"default_path/filename.zip\""
                   } else if (platform == "\"Web\"") {
-                      path = "default_path/index.html"
+                      path = "\"default_path/index.html\""
                   } else if (platform == "\"Windows Desktop\"") {
-                      path = "default_path/filename.exe"
+                      path = "\"default_path/filename.exe\""
                   }
               }
 
@@ -88,11 +88,9 @@ jobs:
                   }
               }
 
-              # Properly quote the strings in JSON format
-              printf("{\"Platform\": \"%s\", \"Export Path\": \"%s\", \"Filename\": \"%s\", \"Extension\": \"%s\"}\n", substr(platform, 2, length(platform)-2), path, filename, extension)
+              # Directly use the platform and path with quotes, avoiding any modifications
+              printf("{\"Platform\": %s, \"Export Path\": %s, \"Filename\": \"%s\", \"Extension\": \"%s\"}\n", platform, path, filename, extension)
           }' export_presets.cfg)
-
-          echo "$github.repository"
 
           # Print the output before sending it to jq
           echo "$awk_output"
