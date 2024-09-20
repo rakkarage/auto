@@ -109,20 +109,20 @@ jobs:
         run: ./godot --headless --verbose --editor --quit
       - name: Export
         run: |
-          mkdir -v -p 'build/${{ matrix.target }}'
-          ./godot --headless --verbose --export-release '${{ matrix.target }}' 'build/${{ matrix.target }}/${{ matrix.file }}.${{ matrix.ext }}'
+          mkdir -v -p 'build/${{ matrix.dir }}'
+          ./godot --headless --verbose --export-release '${{ matrix.target }}' 'build/${{ matrix.dir }}/${{ matrix.file }}.${{ matrix.ext }}'
       - name: Upload Web
         if: matrix.target == 'Web'
         uses: actions/upload-pages-artifact@v3
         with:
-          name: '${{ github.event.repository.name }}_${{ matrix.target }}_Godot_${{ env.GODOT_VERSION }}'
-          path: 'build/${{ matrix.target }}'
+          name: '${{ github.event.repository.name }}_${{ matrix.dir }}_Godot_${{ env.GODOT_VERSION }}'
+          path: 'build/${{ matrix.dir }}'
       - name: Upload Not Web
         if: matrix.target != 'Web'
         uses: actions/upload-artifact@v4
         with:
-          name: '${{ github.event.repository.name }}_${{ matrix.target }}_Godot_${{ env.GODOT_VERSION }}'
-          path: 'build/${{ matrix.target }}'
+          name: '${{ github.event.repository.name }}_${{ matrix.dir }}_Godot_${{ env.GODOT_VERSION }}'
+          path: 'build/${{ matrix.dir }}'
   Clean:
     needs: [Parse, Build]
     if: needs.Parse.outputs.web == 'true'
