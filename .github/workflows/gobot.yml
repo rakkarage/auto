@@ -72,17 +72,14 @@ jobs:
           }
           END { print "]" }' export_presets.cfg)
           echo "matrix=$awk_output" >> $GITHUB_OUTPUT
-          echo $awk_output
       - name: Check
         id: check
         run: |
           matrix_output='${{ steps.matrix.outputs.matrix }}'
           if echo "$matrix_output" | grep -q '"target":"Web"'; then
             echo "web=true" >> $GITHUB_OUTPUT
-            echo "Web target found."
           else
             echo "web=false" >> $GITHUB_OUTPUT
-            echo "Web target not found."
           fi
   Build:
     needs: [Setup, Parse]
