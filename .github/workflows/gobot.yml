@@ -7,7 +7,7 @@ on:
         required: true
         type: string
 concurrency:
-  group: godot-build-and-deploy
+  group: gobot
   cancel-in-progress: false
 env:
   GODOT_VERSION: ${{ github.event.inputs.godot-version }}
