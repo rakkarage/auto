@@ -2,7 +2,7 @@ name: Gobot
 on:
   workflow_call:
     inputs:
-      godot_version:
+      godot-version:
         description: Godot Version
         required: true
         type: string
