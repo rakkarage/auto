@@ -97,23 +97,23 @@ jobs:
             }
             printf "{\"Platform\": \"%s\", \"Export Path\": \"%s\", \"Filename\": \"%s\", \"Extension\": \"%s\"}", platform, path, filename, extension
           }
-          END { print "]" }' export_presets.cfg)
-          
+          END { printf "]" }' export_presets.cfg)
+
           # Print the output for debugging
           echo "$awk_output"
-          
+
           # Save the output directly to matrix.json (no need for jq here)
-          echo "$awk_output" > matrix.json
-          
+          echo -n "$awk_output" > matrix.json
+
           # Display the contents of matrix.json for debugging
           cat matrix.json
-          
-          # Escape the matrix content
-          escaped_matrix=$(jq -Rs . < matrix.json)
-          
+
+          # Escape the matrix content without adding a newline
+          escaped_matrix=$(jq -cRs . < matrix.json)
+
           # Output the escaped matrix for debugging
           echo "Final Matrix: $escaped_matrix"
-          
+
           # Write the escaped matrix to GITHUB_OUTPUT for GitHub Actions
           echo "matrix=$escaped_matrix" >> $GITHUB_OUTPUT
   Build:
