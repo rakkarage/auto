@@ -1,4 +1,4 @@
-name: Godot Build and Deploy
+name: Gobot
 on:
   workflow_call:
     inputs:
