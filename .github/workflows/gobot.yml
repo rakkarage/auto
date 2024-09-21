@@ -35,17 +35,22 @@ jobs:
     outputs:
       matrix: ${{ steps.matrix.outputs.matrix }}
       web: ${{ steps.check.outputs.web }}
+      continue: ${{ steps.ensure.outputs.continue }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
           submodules: true
       - name: Ensure
+        id: ensure
         run: |
           if [ ! -s export_presets.cfg ]; then
             echo '> [!WARNING]' >> $GITHUB_STEP_SUMMARY
-            echo '> export_presets.cfg is missing or empty, nothing to do.' >> $GITHUB_STEP_SUMMARY
+            echo '> `export_presets.cfg` is missing or empty, nothing to do.' >> $GITHUB_STEP_SUMMARY
+            echo "continue=false" >> $GITHUB_OUTPUT
             exit 0
+          else
+            echo "continue=true" >> $GITHUB_OUTPUT
           fi
       - name: Parse
         id: matrix
@@ -83,6 +88,7 @@ jobs:
   Build:
     needs: [Setup, Parse]
     runs-on: ubuntu-latest
+    if: needs.Parse.outputs.continue == 'true'
     strategy:
       matrix:
         include: ${{ fromJson(needs.Parse.outputs.matrix) }}
@@ -119,7 +125,7 @@ jobs:
           path: 'build/${{ matrix.dir }}'
   Clean:
     needs: [Parse, Build]
-    if: needs.Parse.outputs.web == 'true'
+    if: needs.Parse.outputs.continue == 'true' && needs.Parse.outputs.web == 'true'
     runs-on: ubuntu-latest
     permissions:
       deployments: write
@@ -132,7 +138,7 @@ jobs:
           onlyRemoveDeployments: true
   Deploy:
     needs: [Parse, Build, Clean]
-    if: needs.Parse.outputs.web == 'true'
+    if: needs.Parse.outputs.continue == 'true' && needs.Parse.outputs.web == 'true'
     runs-on: ubuntu-latest
     permissions:
       pages: write
