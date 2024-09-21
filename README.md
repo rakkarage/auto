@@ -52,6 +52,9 @@ on:
       godot-version:
         description: Godot Version
         default: '4.3'
+      delete-old-pages:
+        description: Delete Old Pages
+        default: 'false'
 permissions:
   pages: write
   id-token: write
@@ -61,6 +64,7 @@ jobs:
     uses: rakkarage/auto/.github/workflows/gobot.yml@main
     with:
       godot-version: ${{ github.event.inputs.godot-version }}
+      delete-old-pages: ${{ github.event.inputs.delete-old-pages }}
 ```
 
 ## Todo
