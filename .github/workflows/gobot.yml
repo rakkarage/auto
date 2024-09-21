@@ -118,6 +118,7 @@ jobs:
           path: |
             .godot
           key: ${{ github.event.repository.name }}_Godot_${{ env.GODOT_VERSION }}_${{ hashFiles('.godot/**') }}
+          restore-keys: ${{ github.event.repository.name }}_Godot_${{ env.GODOT_VERSION }}_
       - name: Import
         if: steps.cache-import.outputs.cache-hit != 'true'
         run: ./godot --headless --verbose --editor --quit
