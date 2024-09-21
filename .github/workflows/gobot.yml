@@ -44,7 +44,7 @@ jobs:
       - name: Ensure
         id: ensure
         run: |
-          if [ ! -s export_presets.cfg ]; then
+          if [ ! -f export_presets.cfg ] || [ ! -s export_presets.cfg ]; then
             echo '> [!WARNING]' >> $GITHUB_STEP_SUMMARY
             echo '> `export_presets.cfg` is missing or empty, nothing to do.' >> $GITHUB_STEP_SUMMARY
             echo "continue=false" >> $GITHUB_OUTPUT
