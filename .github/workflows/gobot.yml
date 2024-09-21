@@ -69,8 +69,6 @@ jobs:
             echo "web=false" >> $GITHUB_OUTPUT
           fi
   Setup: # Download and cache Godot and Godot Export Templates.
-    needs: Parse
-    if: needs.Parse.outputs.continue == 'true'
     runs-on: ubuntu-latest
     steps:
       - name: Cache Godot Setup
