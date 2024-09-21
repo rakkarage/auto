@@ -15,9 +15,9 @@ jobs:
   Parse: # Analyze `export_presets.cfg` to generate a dynamic platform matrix and check for web export.
     runs-on: ubuntu-latest
     outputs:
+      continue: ${{ steps.exist.outputs.continue }}
       matrix: ${{ steps.parse.outputs.matrix }}
       web: ${{ steps.check.outputs.web }}
-      continue: ${{ steps.exist.outputs.continue }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -92,6 +92,9 @@ jobs:
         run: |
           curl -L -o godot.zip https://downloads.tuxfamily.org/godotengine/${GODOT_VERSION}/Godot_v${GODOT_VERSION}-stable_linux.x86_64.zip
           unzip -q godot.zip && mv Godot_v${GODOT_VERSION}-stable_linux.x86_64 godot && chmod +x godot
+      - name: Cache Godot Templates
+        if: steps.cache-godot-templates.outputs.cache-hit != 'true'
+        run: |
           curl -L -o templates.tpz https://downloads.tuxfamily.org/godotengine/${GODOT_VERSION}/Godot_v${GODOT_VERSION}-stable_export_templates.tpz
           mkdir -p ~/.local/share/godot/export_templates/${GODOT_VERSION}.stable && unzip -q templates.tpz && mv templates/* ~/.local/share/godot/export_templates/${GODOT_VERSION}.stable
   Import: # Generate and cache import files by opening the project.
@@ -99,13 +102,10 @@ jobs:
     if: needs.Parse.outputs.continue == 'true'
     runs-on: ubuntu-latest
     steps:
-      - name: Restore Import
-        id: cache-import
-        uses: actions/cache/restore@v4
+      - name: Checkout
+        uses: actions/checkout@v4
         with:
-          path: |
-            .godot
-          key: ${{ github.event.repository.name }}_Godot_${{ env.GODOT_VERSION }}_${{ hashFiles('.godot/**') }}
+          submodules: true
       - name: Restore Godot
         id: cache-godot
         uses: actions/cache/restore@v4
@@ -113,11 +113,15 @@ jobs:
           path: |
             ./godot
           key: '${{ runner.os }}_Godot_${{ env.GODOT_VERSION }}'
-      - name: Checkout
-        uses: actions/checkout@v4
+      - name: Restore Import
+        id: cache-import
+        uses: actions/cache/restore@v4
         with:
-          submodules: true
+          path: |
+            .godot
+          key: ${{ github.event.repository.name }}_Godot_${{ env.GODOT_VERSION }}_${{ hashFiles('.godot/**') }}
       - name: Import
+        if: steps.cache-import.outputs.cache-hit != 'true'
         run: ./godot --headless --verbose --editor --quit
   Build: # Export the project for each target platform concurrently.
     needs: [Parse, Setup, Import]
@@ -144,7 +148,7 @@ jobs:
         with:
           path: |
             ~/.local/share/godot/export_templates/${{ env.GODOT_VERSION }}.stable
-          key: '${{ runner.os }}_Godot_${{ env.GODOT_VERSION }}'
+          key: '${{ runner.os }}_Templates_${{ env.GODOT_VERSION }}'
       - name: Restore Import
         id: cache-import
         uses: actions/cache/restore@v4
