@@ -55,7 +55,7 @@ jobs:
             echo "> [!CAUTION]" >> $GITHUB_STEP_SUMMARY
             echo "> Invalid GODOT_VERSION format: ${GODOT_VERSION}" >> $GITHUB_STEP_SUMMARY
             exit 1
-          elif [[ "$1" != "true" && "$1" != "false" ]]; then
+          elif [[ "${{ github.event.inputs.delete-old-pages }} != "true" && ${{ github.event.inputs.delete-old-pages }} != "false" ]]; then
             echo "> [!CAUTION]" >> $GITHUB_STEP_SUMMARY
             echo "> Invalid boolean input: $1. Must be 'true' or 'false'.'" >> $GITHUB_STEP_SUMMARY
             exit 1
