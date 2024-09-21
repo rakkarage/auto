@@ -111,9 +111,9 @@ jobs:
           path: |
             ./godot
           key: '${{ runner.os }}_Godot_${{ env.GODOT_VERSION }}'
-      - name: Restore Import
+      - name: Cache Import
         id: cache-import
-        uses: actions/cache/restore@v4
+        uses: actions/cache@v4
         with:
           path: |
             .godot
