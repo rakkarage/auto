@@ -53,6 +53,7 @@ jobs:
             echo "continue=true" >> $GITHUB_OUTPUT
           fi
       - name: Parse
+        if: steps.ensure.outputs.continue == 'true'
         id: matrix
         run: |
           awk_output=$(awk -F= '
@@ -77,6 +78,7 @@ jobs:
           END { print "]" }' export_presets.cfg)
           echo "matrix=$awk_output" >> $GITHUB_OUTPUT
       - name: Check
+        if: steps.ensure.outputs.continue == 'true'
         id: check
         run: |
           matrix_output='${{ steps.matrix.outputs.matrix }}'
