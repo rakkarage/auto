@@ -7,7 +7,7 @@ on:
         required: true
         type: string
       delete-old-pages:
-        description: Delete Old Deployments
+        description: Delete Old Pages
         required: true
         type: boolean
 concurrency:
