@@ -33,9 +33,9 @@ jobs:
   Parse: # Analyze `export_presets.cfg` to generate a dynamic platform matrix and check for web export.
     runs-on: ubuntu-latest
     outputs:
+      continue: ${{ steps.exist.outputs.continue }}
       matrix: ${{ steps.parse.outputs.matrix }}
       web: ${{ steps.check.outputs.web }}
-      continue: ${{ steps.exist.outputs.continue }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
