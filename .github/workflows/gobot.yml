@@ -37,7 +37,6 @@ jobs:
   Parse: # Analyze input and `export_presets.cfg` to generate a dynamic platform matrix, and check for web export.
     runs-on: ubuntu-latest
     outputs:
-      valid: ${{ steps.validate.outputs.valid }}
       matrix: ${{ steps.parse.outputs.matrix }}
       web: ${{ steps.check.outputs.web }}
     steps:
@@ -49,22 +48,21 @@ jobs:
         id: validate
         run: |
           if [ ! -f export_presets.cfg ] || [ ! -s export_presets.cfg ]; then
-            echo "> [!WARNING]" >> $GITHUB_STEP_SUMMARY
+            echo "> [!CAUTION]" >> $GITHUB_STEP_SUMMARY
             echo "> `export_presets.cfg` is missing or empty, nothing to do." >> $GITHUB_STEP_SUMMARY
-            echo "valid=false" >> $GITHUB_OUTPUT
+            exit 1
           elif ! [[ "${GODOT_VERSION}" =~ ^[0-9]+\.[0-9]+(\.[0-9]+)?$ ]]; then
-            echo "> [!WARNING]" >> $GITHUB_STEP_SUMMARY
+            echo "> [!CAUTION]" >> $GITHUB_STEP_SUMMARY
             echo "> Invalid GODOT_VERSION format: ${GODOT_VERSION}" >> $GITHUB_STEP_SUMMARY
-            echo "valid=false" >> $GITHUB_OUTPUT
+            exit 1
           elif [[ "$1" != "true" && "$1" != "false" ]]; then
-            echo "> [!WARNING]" >> $GITHUB_STEP_SUMMARY
+            echo "> [!CAUTION]" >> $GITHUB_STEP_SUMMARY
             echo "> Invalid boolean input: $1. Must be 'true' or 'false'.'" >> $GITHUB_STEP_SUMMARY
-            echo "valid=false" >> $GITHUB_OUTPUT
+            exit 1
           else
             echo "valid=true" >> $GITHUB_OUTPUT
           fi
       - name: Parse
-        if: steps.validate.outputs.valid == 'true'
         id: parse
         run: |
           awk_output=$(awk -F= '
@@ -89,7 +87,6 @@ jobs:
           END { print "]" }' export_presets.cfg)
           echo "matrix=$awk_output" >> $GITHUB_OUTPUT
       - name: Check
-        if: steps.validate.outputs.valid == 'true'
         id: check
         run: |
           matrix_output='${{ steps.parse.outputs.matrix }}'
@@ -100,7 +97,6 @@ jobs:
           fi
   Build: # Export the project for each target platform concurrently.
     needs: [Setup, Parse]
-    if: needs.Parse.outputs.valid == 'true'
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -138,7 +134,7 @@ jobs:
           path: 'build/${{ matrix.dir }}'
   Deploy: # Delete old Pages deployments and deploy Web build to Pages.
     needs: [Setup, Parse, Build]
-    if: needs.Parse.outputs.valid == 'true' && needs.Parse.outputs.web == 'true'
+    if: needs.Parse.outputs.web == 'true'
     runs-on: ubuntu-latest
     permissions:
       pages: write
