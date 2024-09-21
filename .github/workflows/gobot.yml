@@ -124,12 +124,17 @@ jobs:
         with:
           name: '${{ github.event.repository.name }}_${{ matrix.dir }}_Godot_${{ env.GODOT_VERSION }}'
           path: 'build/${{ matrix.dir }}'
-  Clean: # Remove old GitHub Pages deployments (Web builds only).
+  Deploy: # Remove old GitHub Pages deployments and deploy Web build to GitHub Pages.
     needs: [Setup, Parse, Build]
     if: needs.Parse.outputs.continue == 'true' && needs.Parse.outputs.web == 'true'
     runs-on: ubuntu-latest
     permissions:
+      pages: write
+      id-token: write
       deployments: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - name: Delete
         uses: strumwolf/delete-deployment-environment@v3
@@ -137,17 +142,6 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           environment: github-pages
           onlyRemoveDeployments: true
-  Deploy: # Deploy Web build to GitHub Pages.
-    needs: [Setup, Parse, Build, Clean]
-    if: needs.Parse.outputs.continue == 'true' && needs.Parse.outputs.web == 'true'
-    runs-on: ubuntu-latest
-    permissions:
-      pages: write
-      id-token: write
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
       - name: Configure
         uses: actions/configure-pages@v5
       - name: Deploy
