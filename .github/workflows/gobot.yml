@@ -99,9 +99,9 @@ jobs:
     if: needs.Parse.outputs.continue == 'true'
     runs-on: ubuntu-latest
     steps:
-      - name: Cache Import Setup
+      - name: Restore Import
         id: cache-import
-        uses: actions/cache@v4
+        uses: actions/cache/Restore@v4
         with:
           path: |
             .godot
