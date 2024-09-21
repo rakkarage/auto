@@ -128,7 +128,7 @@ jobs:
         with:
           name: '${{ github.event.repository.name }}_${{ matrix.dir }}_Godot_${{ env.GODOT_VERSION }}'
           path: 'build/${{ matrix.dir }}'
-  Deploy: # Delete old GitHub Pages deployments and deploy Web build to GitHub Pages.
+  Deploy: # Delete old Pages deployments and deploy Web build to Pages.
     needs: [Setup, Parse, Build]
     if: needs.Parse.outputs.continue == 'true' && needs.Parse.outputs.web == 'true'
     runs-on: ubuntu-latest
