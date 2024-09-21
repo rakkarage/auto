@@ -9,7 +9,7 @@ on:
       delete-old-pages:
         description: Delete Old Pages
         required: true
-        type: boolean
+        type: string
 concurrency:
   group: gobot
   cancel-in-progress: false
@@ -141,7 +141,7 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - name: Delete
-        if: ${{ github.event.inputs.delete-old-pages }}
+        if: ${{ github.event.inputs.delete-old-pages }} == 'true'
         uses: strumwolf/delete-deployment-environment@v3
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
