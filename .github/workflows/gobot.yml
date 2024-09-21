@@ -12,24 +12,6 @@ concurrency:
 env:
   GODOT_VERSION: ${{ github.event.inputs.godot-version }}
 jobs:
-  Setup:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Cache
-        id: cache
-        uses: actions/cache@v4
-        with:
-          path: |
-            ./godot
-            ~/.local/share/godot/export_templates/${{ env.GODOT_VERSION }}.stable
-          key: '${{ runner.os }}_Godot_${{ env.GODOT_VERSION }}'
-      - name: Cache Godot
-        if: steps.cache.outputs.cache-hit != 'true'
-        run: |
-          curl -L -o godot.zip https://downloads.tuxfamily.org/godotengine/${GODOT_VERSION}/Godot_v${GODOT_VERSION}-stable_linux.x86_64.zip
-          unzip -q godot.zip && mv Godot_v${GODOT_VERSION}-stable_linux.x86_64 godot && chmod +x godot
-          curl -L -o templates.tpz https://downloads.tuxfamily.org/godotengine/${GODOT_VERSION}/Godot_v${GODOT_VERSION}-stable_export_templates.tpz
-          mkdir -p ~/.local/share/godot/export_templates/${GODOT_VERSION}.stable && unzip -q templates.tpz && mv templates/* ~/.local/share/godot/export_templates/${GODOT_VERSION}.stable
   Parse:
     runs-on: ubuntu-latest
     outputs:
@@ -86,6 +68,39 @@ jobs:
           else
             echo "web=false" >> $GITHUB_OUTPUT
           fi
+  Setup:
+    needs: Parse
+    if: needs.Parse.outputs.continue == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Cache Godot Setup
+        id: cache-godot
+        uses: actions/cache@v4
+        with:
+          path: |
+            ./godot
+            ~/.local/share/godot/export_templates/${{ env.GODOT_VERSION }}.stable
+          key: '${{ runner.os }}_Godot_${{ env.GODOT_VERSION }}'
+      - name: Cache Godot
+        if: steps.cache-godot.outputs.cache-hit != 'true'
+        run: |
+          curl -L -o godot.zip https://downloads.tuxfamily.org/godotengine/${GODOT_VERSION}/Godot_v${GODOT_VERSION}-stable_linux.x86_64.zip
+          unzip -q godot.zip && mv Godot_v${GODOT_VERSION}-stable_linux.x86_64 godot && chmod +x godot
+          curl -L -o templates.tpz https://downloads.tuxfamily.org/godotengine/${GODOT_VERSION}/Godot_v${GODOT_VERSION}-stable_export_templates.tpz
+          mkdir -p ~/.local/share/godot/export_templates/${GODOT_VERSION}.stable && unzip -q templates.tpz && mv templates/* ~/.local/share/godot/export_templates/${GODOT_VERSION}.stable
+      - name: Cache Import Setup
+        id: cache-import
+        uses: actions/cache@v4
+        with:
+          path: |
+            .godot
+          key: ${{ github.event.repository.name }}_Godot_${{ env.GODOT_VERSION }}_${{ hashFiles('.godot/**') }}
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+      - name: Import
+        run: ./godot --headless --verbose --editor --quit
   Build:
     needs: [Setup, Parse]
     if: needs.Parse.outputs.continue == 'true'
@@ -98,16 +113,22 @@ jobs:
         uses: actions/checkout@v4
         with:
           submodules: true
-      - name: Restore
-        id: cache
+      - name: Restore Godot
+        id: cache-godot
         uses: actions/cache/restore@v4
         with:
           path: |
             ./godot
             ~/.local/share/godot/export_templates/${{ env.GODOT_VERSION }}.stable
           key: '${{ runner.os }}_Godot_${{ env.GODOT_VERSION }}'
-      - name: Import
-        run: ./godot --headless --verbose --editor --quit
+      - name: Restore Import
+        id: cache-import
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            .godot
+          key: ${{ github.event.repository.name }}_Godot_${{ env.GODOT_VERSION }}_${{ hashFiles('.godot/**') }}
+          restore-keys: ${{ github.event.repository.name }}_Godot_${{ env.GODOT_VERSION }}_
       - name: Export
         run: |
           mkdir -p 'build/${{ matrix.dir }}'
