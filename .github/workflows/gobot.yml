@@ -55,9 +55,11 @@ jobs:
           elif ! [[ "${{ inputs.godot-version }}" =~ ^[0-9]+\.[0-9]+(\.[0-9]+)?$ ]]; then
             echo "> [!WARNING]" >> $GITHUB_STEP_SUMMARY
             echo "> Invalid GODOT_VERSION format: ${{ inputs.godot-version }}" >> $GITHUB_STEP_SUMMARY
+            echo "valid=false" >> $GITHUB_OUTPUT
           elif [[ "$1" != "true" && "$1" != "false" ]]; then
             echo "> [!WARNING]" >> $GITHUB_STEP_SUMMARY
             echo "> Invalid boolean input: $1. Must be 'true' or 'false'.'" >> $GITHUB_STEP_SUMMARY
+            echo "valid=false" >> $GITHUB_OUTPUT
           else
             echo "valid=true" >> $GITHUB_OUTPUT
           fi
