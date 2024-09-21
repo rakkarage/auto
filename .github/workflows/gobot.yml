@@ -112,7 +112,6 @@ jobs:
         with:
           path: |
             ./godot
-            ~/.local/share/godot/export_templates/${{ env.GODOT_VERSION }}.stable
           key: '${{ runner.os }}_Godot_${{ env.GODOT_VERSION }}'
       - name: Checkout
         uses: actions/checkout@v4
