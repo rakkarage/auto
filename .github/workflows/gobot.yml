@@ -15,6 +15,7 @@ concurrency:
   cancel-in-progress: false
 env:
   GODOT_VERSION: ${{ github.event.inputs.godot-version }}
+  DELETE_OLD_PAGES: ${{ github.event.inputs.delete-old-pages }}
 jobs:
   Setup: # Download and cache Godot and Export Templates.
     runs-on: ubuntu-latest
@@ -48,19 +49,19 @@ jobs:
         id: validate
         run: |
           if [ ! -f export_presets.cfg ] || [ ! -s export_presets.cfg ]; then
-            echo "> [!CAUTION]" >> $GITHUB_STEP_SUMMARY
-            echo "> `export_presets.cfg` is missing or empty, nothing to do." >> $GITHUB_STEP_SUMMARY
+            echo '> [!CAUTION]' >> $GITHUB_STEP_SUMMARY
+            echo '> `export_presets.cfg` is missing or empty, nothing to do.' >> $GITHUB_STEP_SUMMARY
             exit 1
-          elif ! [[ "${GODOT_VERSION}" =~ ^[0-9]+\.[0-9]+(\.[0-9]+)?$ ]]; then
-            echo "> [!CAUTION]" >> $GITHUB_STEP_SUMMARY
-            echo "> Invalid GODOT_VERSION format: ${GODOT_VERSION}" >> $GITHUB_STEP_SUMMARY
+          elif ! [[ '${GODOT_VERSION}' =~ ^[0-9]+\.[0-9]+(\.[0-9]+)?$ ]]; then
+            echo '> [!CAUTION]' >> $GITHUB_STEP_SUMMARY
+            echo '> Invalid GODOT_VERSION format: ${GODOT_VERSION}' >> $GITHUB_STEP_SUMMARY
             exit 2
-          elif [[ "'${{ github.event.inputs.delete-old-pages }}' != "true" && '${{ github.event.inputs.delete-old-pages }}' != "false" ]]; then
-            echo "> [!CAUTION]" >> $GITHUB_STEP_SUMMARY
-            echo "> Invalid boolean input: '${{ github.event.inputs.delete-old-pages }}'. Must be 'true' or 'false'.'" >> $GITHUB_STEP_SUMMARY
+          elif [[ '${DELETE_OLD_PAGES}' != 'true' && '${DELETE_OLD_PAGES}' != 'false' ]]; then
+            echo '> [!CAUTION]' >> $GITHUB_STEP_SUMMARY
+            echo '> Invalid boolean input: ${DELETE_OLD_PAGES}. Must be "true" or "false".' >> $GITHUB_STEP_SUMMARY
             exit 3
           else
-            echo "valid=true" >> $GITHUB_OUTPUT
+            echo 'valid=true' >> $GITHUB_OUTPUT
           fi
       - name: Parse
         id: parse
