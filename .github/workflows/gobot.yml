@@ -90,7 +90,7 @@ jobs:
   Build:
     needs: [Setup, Parse]
     runs-on: ubuntu-latest
-    if: needs.parse.outputs.exist == 'true'
+    if: needs.Parse.outputs.exist == 'true'
     strategy:
       matrix:
         include: ${{ fromJson(needs.Parse.outputs.matrix) }}
@@ -127,7 +127,7 @@ jobs:
           path: 'build/${{ matrix.dir }}'
   Clean:
     needs: [Parse, Build]
-    if: needs.parse.outputs.exist == 'true' && needs.parse.outputs.web == 'true'
+    if: needs.Parse.outputs.exist == 'true' && needs.Parse.outputs.web == 'true'
     runs-on: ubuntu-latest
     permissions:
       deployments: write
@@ -140,7 +140,7 @@ jobs:
           onlyRemoveDeployments: true
   Deploy:
     needs: [Parse, Build, Clean]
-    if: needs.parse.outputs.exist == 'true' && needs.parse.outputs.web == 'true'
+    if: needs.Parse.outputs.exist == 'true' && needs.Parse.outputs.web == 'true'
     runs-on: ubuntu-latest
     permissions:
       pages: write
