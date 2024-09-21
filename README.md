@@ -62,3 +62,8 @@ jobs:
     with:
       godot-version: ${{ github.event.inputs.godot-version }}
 ```
+
+## Todo
+
+- gen win icon with `rcedit`?
+- cache project import files in .godot folder?
