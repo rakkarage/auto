@@ -33,9 +33,9 @@ jobs:
   Parse:
     runs-on: ubuntu-latest
     outputs:
-      matrix: ${{ steps.matrix.outputs.matrix }}
+      matrix: ${{ steps.parse.outputs.matrix }}
       web: ${{ steps.check.outputs.web }}
-      exist: ${{ steps.exist.outputs.exist }}
+      continue: ${{ steps.exist.outputs.continue }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -47,14 +47,14 @@ jobs:
           if [ ! -f export_presets.cfg ] || [ ! -s export_presets.cfg ]; then
             echo '> [!WARNING]' >> $GITHUB_STEP_SUMMARY
             echo '> `export_presets.cfg` is missing or empty, nothing to do.' >> $GITHUB_STEP_SUMMARY
-            echo "exist=false" >> $GITHUB_OUTPUT
+            echo "continue=false" >> $GITHUB_OUTPUT
             exit 0
           else
-            echo "exist=true" >> $GITHUB_OUTPUT
+            echo "continue=true" >> $GITHUB_OUTPUT
           fi
       - name: Parse
-        if: steps.exist.outputs.exist == 'true'
-        id: matrix
+        if: steps.exist.outputs.continue == 'true'
+        id: parse
         run: |
           awk_output=$(awk -F= '
           BEGIN { printf "["; first=1 }
@@ -78,10 +78,10 @@ jobs:
           END { print "]" }' export_presets.cfg)
           echo "matrix=$awk_output" >> $GITHUB_OUTPUT
       - name: Check
-        if: steps.exist.outputs.exist == 'true'
+        if: steps.exist.outputs.continue == 'true'
         id: check
         run: |
-          matrix_output='${{ steps.matrix.outputs.matrix }}'
+          matrix_output='${{ steps.parse.outputs.matrix }}'
           if echo "$matrix_output" | grep -q '"target":"Web"'; then
             echo "web=true" >> $GITHUB_OUTPUT
           else
@@ -89,8 +89,8 @@ jobs:
           fi
   Build:
     needs: [Setup, Parse]
+    if: needs.Parse.outputs.continue == 'true'
     runs-on: ubuntu-latest
-    if: needs.Parse.outputs.exist == 'true'
     strategy:
       matrix:
         include: ${{ fromJson(needs.Parse.outputs.matrix) }}
@@ -127,7 +127,7 @@ jobs:
           path: 'build/${{ matrix.dir }}'
   Clean:
     needs: [Parse, Build]
-    if: needs.Parse.outputs.exist == 'true' && needs.Parse.outputs.web == 'true'
+    if: needs.Parse.outputs.continue == 'true' && needs.Parse.outputs.web == 'true'
     runs-on: ubuntu-latest
     permissions:
       deployments: write
@@ -140,7 +140,7 @@ jobs:
           onlyRemoveDeployments: true
   Deploy:
     needs: [Parse, Build, Clean]
-    if: needs.Parse.outputs.exist == 'true' && needs.Parse.outputs.web == 'true'
+    if: needs.Parse.outputs.continue == 'true' && needs.Parse.outputs.web == 'true'
     runs-on: ubuntu-latest
     permissions:
       pages: write
