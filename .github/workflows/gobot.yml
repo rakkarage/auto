@@ -12,12 +12,30 @@ concurrency:
 env:
   GODOT_VERSION: ${{ github.event.inputs.godot-version }}
 jobs:
+  Setup: # Download and cache Godot and Godot Export Templates.
+    runs-on: ubuntu-latest
+    steps:
+      - name: Cache
+        id: cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            ./godot
+            ~/.local/share/godot/export_templates/${{ env.GODOT_VERSION }}.stable
+          key: '${{ runner.os }}_Godot_${{ env.GODOT_VERSION }}'
+      - name: Cache Godot
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: |
+          curl -L -o godot.zip https://downloads.tuxfamily.org/godotengine/${GODOT_VERSION}/Godot_v${GODOT_VERSION}-stable_linux.x86_64.zip
+          unzip -q godot.zip && mv Godot_v${GODOT_VERSION}-stable_linux.x86_64 godot && chmod +x godot
+          curl -L -o templates.tpz https://downloads.tuxfamily.org/godotengine/${GODOT_VERSION}/Godot_v${GODOT_VERSION}-stable_export_templates.tpz
+          mkdir -p ~/.local/share/godot/export_templates/${GODOT_VERSION}.stable && unzip -q templates.tpz && mv templates/* ~/.local/share/godot/export_templates/${GODOT_VERSION}.stable
   Parse: # Analyze `export_presets.cfg` to generate a dynamic platform matrix and check for web export.
     runs-on: ubuntu-latest
     outputs:
-      continue: ${{ steps.exist.outputs.continue }}
       matrix: ${{ steps.parse.outputs.matrix }}
       web: ${{ steps.check.outputs.web }}
+      continue: ${{ steps.exist.outputs.continue }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -68,62 +86,8 @@ jobs:
           else
             echo "web=false" >> $GITHUB_OUTPUT
           fi
-  Setup: # Download and cache Godot and Godot Export Templates.
-    runs-on: ubuntu-latest
-    steps:
-      - name: Cache Godot Setup
-        id: cache-godot
-        uses: actions/cache@v4
-        with:
-          path: |
-            ./godot
-          key: '${{ runner.os }}_Godot_${{ env.GODOT_VERSION }}'
-      - name: Cache Godot Templates Setup
-        id: cache-godot-templates
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.local/share/godot/export_templates/${{ env.GODOT_VERSION }}.stable
-          key: '${{ runner.os }}_Templates_${{ env.GODOT_VERSION }}'
-      - name: Cache Godot
-        if: steps.cache-godot.outputs.cache-hit != 'true'
-        run: |
-          curl -L -o godot.zip https://downloads.tuxfamily.org/godotengine/${GODOT_VERSION}/Godot_v${GODOT_VERSION}-stable_linux.x86_64.zip
-          unzip -q godot.zip && mv Godot_v${GODOT_VERSION}-stable_linux.x86_64 godot && chmod +x godot
-      - name: Cache Godot Templates
-        if: steps.cache-godot-templates.outputs.cache-hit != 'true'
-        run: |
-          curl -L -o templates.tpz https://downloads.tuxfamily.org/godotengine/${GODOT_VERSION}/Godot_v${GODOT_VERSION}-stable_export_templates.tpz
-          mkdir -p ~/.local/share/godot/export_templates/${GODOT_VERSION}.stable && unzip -q templates.tpz && mv templates/* ~/.local/share/godot/export_templates/${GODOT_VERSION}.stable
-  Import: # Generate and cache import files by opening the project.
-    needs: [Parse, Setup]
-    if: needs.Parse.outputs.continue == 'true'
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          submodules: true
-      - name: Restore Godot
-        id: cache-godot
-        uses: actions/cache/restore@v4
-        with:
-          path: |
-            ./godot
-          key: '${{ runner.os }}_Godot_${{ env.GODOT_VERSION }}'
-      - name: Cache Import
-        id: cache-import
-        uses: actions/cache@v4
-        with:
-          path: |
-            .godot
-          key: ${{ github.event.repository.name }}_Godot_${{ env.GODOT_VERSION }}_${{ hashFiles('.godot/**') }}
-          restore-keys: ${{ github.event.repository.name }}_Godot_${{ env.GODOT_VERSION }}_
-      - name: Import
-        if: steps.cache-import.outputs.cache-hit != 'true'
-        run: ./godot --headless --verbose --editor --quit
   Build: # Export the project for each target platform concurrently.
-    needs: [Parse, Setup, Import]
+    needs: [Setup, Parse]
     if: needs.Parse.outputs.continue == 'true'
     runs-on: ubuntu-latest
     strategy:
@@ -134,28 +98,16 @@ jobs:
         uses: actions/checkout@v4
         with:
           submodules: true
-      - name: Restore Godot
-        id: cache-godot
+      - name: Restore
+        id: cache
         uses: actions/cache/restore@v4
         with:
           path: |
             ./godot
-          key: '${{ runner.os }}_Godot_${{ env.GODOT_VERSION }}'
-      - name: Restore Godot Templates
-        id: cache-godot-templates
-        uses: actions/cache/restore@v4
-        with:
-          path: |
             ~/.local/share/godot/export_templates/${{ env.GODOT_VERSION }}.stable
-          key: '${{ runner.os }}_Templates_${{ env.GODOT_VERSION }}'
-      - name: Restore Import
-        id: cache-import
-        uses: actions/cache/restore@v4
-        with:
-          path: |
-            .godot
-          key: ${{ github.event.repository.name }}_Godot_${{ env.GODOT_VERSION }}_${{ hashFiles('.godot/**') }}
-          restore-keys: ${{ github.event.repository.name }}_Godot_${{ env.GODOT_VERSION }}_
+          key: '${{ runner.os }}_Godot_${{ env.GODOT_VERSION }}'
+      - name: Import
+        run: ./godot --headless --verbose --editor --quit
       - name: Export
         run: |
           mkdir -p 'build/${{ matrix.dir }}'
@@ -173,7 +125,7 @@ jobs:
           name: '${{ github.event.repository.name }}_${{ matrix.dir }}_Godot_${{ env.GODOT_VERSION }}'
           path: 'build/${{ matrix.dir }}'
   Clean: # Remove old GitHub Pages deployments (Web builds only).
-    needs: [Parse, Setup, Import, Build]
+    needs: [Setup, Parse, Build]
     if: needs.Parse.outputs.continue == 'true' && needs.Parse.outputs.web == 'true'
     runs-on: ubuntu-latest
     permissions:
@@ -186,7 +138,7 @@ jobs:
           environment: github-pages
           onlyRemoveDeployments: true
   Deploy: # Deploy Web build to GitHub Pages.
-    needs: [Parse, Setup, Import, Build, Clean]
+    needs: [Setup, Parse, Build, Clean]
     if: needs.Parse.outputs.continue == 'true' && needs.Parse.outputs.web == 'true'
     runs-on: ubuntu-latest
     permissions:
