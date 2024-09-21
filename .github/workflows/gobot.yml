@@ -101,7 +101,7 @@ jobs:
     steps:
       - name: Restore Import
         id: cache-import
-        uses: actions/cache/Restore@v4
+        uses: actions/cache/restore@v4
         with:
           path: |
             .godot
