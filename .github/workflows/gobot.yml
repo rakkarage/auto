@@ -34,10 +34,10 @@ jobs:
           unzip -q godot.zip && mv Godot_v${GODOT_VERSION}-stable_linux.x86_64 godot && chmod +x godot
           curl -L -o templates.tpz https://downloads.tuxfamily.org/godotengine/${GODOT_VERSION}/Godot_v${GODOT_VERSION}-stable_export_templates.tpz
           mkdir -p ~/.local/share/godot/export_templates/${GODOT_VERSION}.stable && unzip -q templates.tpz && mv templates/* ~/.local/share/godot/export_templates/${GODOT_VERSION}.stable
-  Parse: # Analyze `export_presets.cfg` to generate a dynamic platform matrix, and check for web export.
+  Parse: # Analyze input and `export_presets.cfg` to generate a dynamic platform matrix, and check for web export.
     runs-on: ubuntu-latest
     outputs:
-      continue: ${{ steps.exist.outputs.continue }}
+      valid: ${{ steps.validate.outputs.valid }}
       matrix: ${{ steps.parse.outputs.matrix }}
       web: ${{ steps.check.outputs.web }}
     steps:
@@ -45,18 +45,24 @@ jobs:
         uses: actions/checkout@v4
         with:
           submodules: true
-      - name: Exist
-        id: exist
+      - name: Validate
+        id: validate
         run: |
           if [ ! -f export_presets.cfg ] || [ ! -s export_presets.cfg ]; then
-            echo '> [!WARNING]' >> $GITHUB_STEP_SUMMARY
-            echo '> `export_presets.cfg` is missing or empty, nothing to do.' >> $GITHUB_STEP_SUMMARY
-            echo "continue=false" >> $GITHUB_OUTPUT
+            echo "> [!WARNING]" >> $GITHUB_STEP_SUMMARY
+            echo "> `export_presets.cfg` is missing or empty, nothing to do." >> $GITHUB_STEP_SUMMARY
+            echo "valid=false" >> $GITHUB_OUTPUT
+          elif ! [[ "${{ inputs.godot-version }}" =~ ^[0-9]+\.[0-9]+(\.[0-9]+)?$ ]]; then
+            echo "> [!WARNING]" >> $GITHUB_STEP_SUMMARY
+            echo "> Invalid GODOT_VERSION format: ${{ inputs.godot-version }}" >> $GITHUB_STEP_SUMMARY
+          elif [[ "$1" != "true" && "$1" != "false" ]]; then
+            echo "> [!WARNING]" >> $GITHUB_STEP_SUMMARY
+            echo "> Invalid boolean input: $1. Must be 'true' or 'false'.'" >> $GITHUB_STEP_SUMMARY
           else
-            echo "continue=true" >> $GITHUB_OUTPUT
+            echo "valid=true" >> $GITHUB_OUTPUT
           fi
       - name: Parse
-        if: steps.exist.outputs.continue == 'true'
+        if: steps.validate.outputs.valid == 'true'
         id: parse
         run: |
           awk_output=$(awk -F= '
@@ -81,7 +87,7 @@ jobs:
           END { print "]" }' export_presets.cfg)
           echo "matrix=$awk_output" >> $GITHUB_OUTPUT
       - name: Check
-        if: steps.exist.outputs.continue == 'true'
+        if: steps.validate.outputs.valid == 'true'
         id: check
         run: |
           matrix_output='${{ steps.parse.outputs.matrix }}'
@@ -92,7 +98,7 @@ jobs:
           fi
   Build: # Export the project for each target platform concurrently.
     needs: [Setup, Parse]
-    if: needs.Parse.outputs.continue == 'true'
+    if: needs.Parse.outputs.valid == 'true'
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -130,7 +136,7 @@ jobs:
           path: 'build/${{ matrix.dir }}'
   Deploy: # Delete old Pages deployments and deploy Web build to Pages.
     needs: [Setup, Parse, Build]
-    if: needs.Parse.outputs.continue == 'true' && needs.Parse.outputs.web == 'true'
+    if: needs.Parse.outputs.valid == 'true' && needs.Parse.outputs.web == 'true'
     runs-on: ubuntu-latest
     permissions:
       pages: write
