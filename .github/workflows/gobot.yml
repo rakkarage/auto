@@ -16,7 +16,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Cache
-        id: godot-cache
+        id: cache
         uses: actions/cache@v4
         with:
           path: |
@@ -24,7 +24,7 @@ jobs:
             ~/.local/share/godot/export_templates/${{ env.GODOT_VERSION }}.stable
           key: '${{ runner.os }}_Godot_${{ env.GODOT_VERSION }}'
       - name: Cache Godot
-        if: steps.godot-cache.outputs.cache-hit != 'true'
+        if: steps.cache.outputs.cache-hit != 'true'
         run: |
           curl -L -o godot.zip https://downloads.tuxfamily.org/godotengine/${GODOT_VERSION}/Godot_v${GODOT_VERSION}-stable_linux.x86_64.zip
           unzip -q godot.zip && mv Godot_v${GODOT_VERSION}-stable_linux.x86_64 godot && chmod +x godot
@@ -35,14 +35,14 @@ jobs:
     outputs:
       matrix: ${{ steps.matrix.outputs.matrix }}
       web: ${{ steps.check.outputs.web }}
-      continue: ${{ steps.ensure.outputs.continue }}
+      exist: ${{ steps.exist.outputs.exist }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
           submodules: true
-      - name: Ensure
-        id: ensure
+      - name: Exist
+        id: exist
         run: |
           if [ ! -f export_presets.cfg ] || [ ! -s export_presets.cfg ]; then
             echo '> [!WARNING]' >> $GITHUB_STEP_SUMMARY
@@ -53,7 +53,7 @@ jobs:
             echo "continue=true" >> $GITHUB_OUTPUT
           fi
       - name: Parse
-        if: steps.ensure.outputs.continue == 'true'
+        if: steps.exist.outputs.exist == 'true'
         id: matrix
         run: |
           awk_output=$(awk -F= '
@@ -78,7 +78,7 @@ jobs:
           END { print "]" }' export_presets.cfg)
           echo "matrix=$awk_output" >> $GITHUB_OUTPUT
       - name: Check
-        if: steps.ensure.outputs.continue == 'true'
+        if: steps.exist.outputs.exist == 'true'
         id: check
         run: |
           matrix_output='${{ steps.matrix.outputs.matrix }}'
@@ -90,7 +90,7 @@ jobs:
   Build:
     needs: [Setup, Parse]
     runs-on: ubuntu-latest
-    if: needs.Parse.outputs.continue == 'true'
+    if: needs.parse.outputs.exist == 'true'
     strategy:
       matrix:
         include: ${{ fromJson(needs.Parse.outputs.matrix) }}
@@ -100,7 +100,7 @@ jobs:
         with:
           submodules: true
       - name: Restore
-        id: godot-cache
+        id: cache
         uses: actions/cache/restore@v4
         with:
           path: |
@@ -127,7 +127,7 @@ jobs:
           path: 'build/${{ matrix.dir }}'
   Clean:
     needs: [Parse, Build]
-    if: needs.Parse.outputs.continue == 'true' && needs.Parse.outputs.web == 'true'
+    if: needs.parse.outputs.exist == 'true' && needs.parse.outputs.web == 'true'
     runs-on: ubuntu-latest
     permissions:
       deployments: write
@@ -140,7 +140,7 @@ jobs:
           onlyRemoveDeployments: true
   Deploy:
     needs: [Parse, Build, Clean]
-    if: needs.Parse.outputs.continue == 'true' && needs.Parse.outputs.web == 'true'
+    if: needs.parse.outputs.exist == 'true' && needs.parse.outputs.web == 'true'
     runs-on: ubuntu-latest
     permissions:
       pages: write
