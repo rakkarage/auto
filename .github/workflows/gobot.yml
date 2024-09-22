@@ -17,25 +17,7 @@ env:
   GODOT_VERSION: ${{ github.event.inputs.godot-version }}
   DELETE_OLD_PAGES: ${{ github.event.inputs.delete-old-pages }}
 jobs:
-  Setup: # Download and cache Godot and Export Templates.
-    runs-on: ubuntu-latest
-    steps:
-      - name: Cache
-        id: cache
-        uses: actions/cache@v4
-        with:
-          path: |
-            ./godot
-            ~/.local/share/godot/export_templates/${{ env.GODOT_VERSION }}.stable
-          key: ${{ runner.os }}_Godot_${{ env.GODOT_VERSION }}
-      - name: Cache Godot
-        if: steps.cache.outputs.cache-hit != 'true'
-        run: |
-          curl -L -o godot.zip https://downloads.tuxfamily.org/godotengine/${GODOT_VERSION}/Godot_v${GODOT_VERSION}-stable_linux.x86_64.zip
-          unzip -q godot.zip && mv Godot_v${GODOT_VERSION}-stable_linux.x86_64 godot && chmod +x godot
-          curl -L -o templates.tpz https://downloads.tuxfamily.org/godotengine/${GODOT_VERSION}/Godot_v${GODOT_VERSION}-stable_export_templates.tpz
-          mkdir -p ~/.local/share/godot/export_templates/${GODOT_VERSION}.stable && unzip -q templates.tpz && mv templates/* ~/.local/share/godot/export_templates/${GODOT_VERSION}.stable
-  Parse: # Analyze input and `export_presets.cfg` to generate a dynamic platform matrix, and check for web export.
+  Setup: # Analyze input and to generate a dynamic platform matrix, and cache Godot and Export Templates.
     runs-on: ubuntu-latest
     outputs:
       matrix: ${{ steps.parse.outputs.matrix }}
@@ -60,6 +42,21 @@ jobs:
             echo "> Invalid boolean input: ${DELETE_OLD_PAGES}. Must be 'true' or 'false'." >> $GITHUB_STEP_SUMMARY
             exit 3
           fi
+      - name: Cache
+        id: cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            ./godot
+            ~/.local/share/godot/export_templates/${{ env.GODOT_VERSION }}.stable
+          key: ${{ runner.os }}_Godot_${{ env.GODOT_VERSION }}
+      - name: Cache Godot
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: |
+          curl -L -o godot.zip https://downloads.tuxfamily.org/godotengine/${GODOT_VERSION}/Godot_v${GODOT_VERSION}-stable_linux.x86_64.zip
+          unzip -q godot.zip && mv Godot_v${GODOT_VERSION}-stable_linux.x86_64 godot && chmod +x godot
+          curl -L -o templates.tpz https://downloads.tuxfamily.org/godotengine/${GODOT_VERSION}/Godot_v${GODOT_VERSION}-stable_export_templates.tpz
+          mkdir -p ~/.local/share/godot/export_templates/${GODOT_VERSION}.stable && unzip -q templates.tpz && mv templates/* ~/.local/share/godot/export_templates/${GODOT_VERSION}.stable
       - name: Parse
         id: parse
         run: |
@@ -94,11 +91,11 @@ jobs:
             echo "web=false" >> $GITHUB_OUTPUT
           fi
   Build: # Export the project for each target platform concurrently.
-    needs: [Setup, Parse]
+    needs: [Setup]
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        include: ${{ fromJson(needs.Parse.outputs.matrix) }}
+        include: ${{ fromJson(needs.Setup.outputs.matrix) }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -131,8 +128,8 @@ jobs:
           name: ${{ github.event.repository.name }}_${{ matrix.dir }}_Godot_${{ env.GODOT_VERSION }}
           path: build/${{ matrix.dir }}
   Deploy: # Deploy Web build to Pages after optionally deleting old Pages deployments.
-    needs: [Setup, Parse, Build]
-    if: needs.Parse.outputs.web == 'true'
+    needs: [Setup, Build]
+    if: needs.Setup.outputs.web == 'true'
     runs-on: ubuntu-latest
     permissions:
       pages: write
