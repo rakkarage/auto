@@ -146,14 +146,12 @@ jobs:
       - name: Delete
         if: ${{ github.event.inputs.delete-old-pages == 'true' }}
         uses: actions/github-script@v7
+        env:
+          ENVIRONMENT: ${{ job.environment.name }}
         with:
           script: |
-            const environmentName = '${{ job.environment.environmentName }}';
+            const environmentName = process.env.ENVIRONMENT;
             console.log(`Checking deployments for environment: ${environmentName}`);
-            const name = '${{ job.environment.name }}';
-            console.log(`Checking deployments for environment: ${name}`);
-            console.log(github);
-            console.log(github.rest.repos)
             const { data: deployments } = await github.rest.repos.listDeployments({
               owner: context.repo.owner,
               repo: context.repo.repo,
