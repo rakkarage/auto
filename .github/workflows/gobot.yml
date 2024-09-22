@@ -70,10 +70,14 @@ jobs:
           }
           END { print "]" }' export_presets.cfg)
           echo "matrix=$awk_output" >> $GITHUB_OUTPUT
+          echo "$awk_output"
 
           if [[ "$web_found" == "true" ]]; then
             echo "web=true" >> $GITHUB_OUTPUT
           fi
+          echo "$web_found"
+
+          echo "$GITHUB_OUTPUT"
 
           # warn if version < 4.3 and Linux/X11 not found but Linux found
           if [[ "$(printf '%s\n' "${GODOT_VERSION}" "4.3" | sort -V | head -n1)" != "4.3" && "$linux_found" == "true" && "$linux_x11_found" == "false" ]]; then
