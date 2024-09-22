@@ -19,7 +19,8 @@ This workflow is designed to automate the process of building and deploying godo
 
 ### Inputs
 
-- `godot-version`: The version of Godot to be used in the build. This is required.
+- `godot-version`: The version of Godot to be used in the build. This is required. Default: '4.3'
+- `delete-old-pages`: Delete old Pages deployments or not. Default: 'false'
 
 ### Jobs
 
@@ -34,15 +35,13 @@ This workflow is designed to automate the process of building and deploying godo
    - Exports to the appropriate directories with the platform-specific filenames and extensions.
    - Uploads the artifacts for each platform, including a special step for Web exports.
 
-4. **Clean** (Conditional)
-   - Cleans up old GitHub Pages deployments if the Web export is included.
-
 5. **Deploy** (Conditional)
+   - Cleans up old GitHub Pages deployments if the Web export is included.
    - Deploys the Web export to GitHub Pages if available.
 
 ## Usage
 
-To use the workflow, call it from another workflow using the `workflow_call` event and provide the required `godot-version` input:
+To use the workflow, call it from another workflow using (for example) the `workflow_call` event and provide the required inputs:
 
 ```yaml
 name: Gobot
