@@ -153,7 +153,7 @@ jobs:
             const name = '${{ job.environment.name }}';
             console.log(`Checking deployments for environment: ${name}`);
             console.log(github);
-            console.log(github.repos)
+            console.log(github.rest.repos)
             const { data: deployments } = await github.rest.repos.listDeployments({
               owner: context.repo.owner,
               repo: context.repo.repo,
