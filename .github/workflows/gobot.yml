@@ -46,7 +46,6 @@ jobs:
         with:
           submodules: true
       - name: Validate
-        id: validate
         run: |
           if [ ! -f export_presets.cfg ] || [ ! -s export_presets.cfg ]; then
             echo "> [!CAUTION]" >> $GITHUB_STEP_SUMMARY
@@ -144,7 +143,7 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - name: Delete
-        if: ${{ github.event.inputs.delete-old-pages == 'true' }}
+        if: github.event.inputs.delete-old-pages == 'true'
         uses: strumwolf/delete-deployment-environment@v3
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
