@@ -70,6 +70,13 @@ jobs:
           END { print "]" }' export_presets.cfg)
           echo "matrix=$awk_output" >> $GITHUB_OUTPUT
 
+          # deploy job needed?
+          if echo "$awk_output" | grep -q '"target":"Web"'; then
+            echo "web=true" >> $GITHUB_OUTPUT
+          else
+            echo "web=false" >> $GITHUB_OUTPUT
+          fi
+
           # warn if version < 4.3 and Linux/X11 not found but Linux found
           if [[ "${GODOT_VERSION}" < "4.3" && "$linux_found" == "true" && "$linux_x11_found" == "false" ]]; then
             echo "> [!WARNING]" >> $GITHUB_STEP_SUMMARY
@@ -80,13 +87,6 @@ jobs:
           if [[ "${GODOT_VERSION}" > "4.2" && "$linux_found" == "false" && "$linux_x11_found" == "true" ]]; then
             echo "> [!WARNING]" >> $GITHUB_STEP_SUMMARY
             echo "> Linux/X11 platform found, but Linux is missing for Godot version > 4.2." >> $GITHUB_STEP_SUMMARY
-          fi
-
-          # deploy job needed?
-          if echo "$matrix_output" | grep -q '"target":"Web"'; then
-            echo "web=true" >> $GITHUB_OUTPUT
-          else
-            echo "web=false" >> $GITHUB_OUTPUT
           fi
       - name: Cache
         id: cache
