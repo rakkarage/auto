@@ -4,6 +4,9 @@
 
 This workflow is designed to automate the process of building and deploying Godot projects.
 
+![](screenshot1.png)
+![](screenshot2.png)
+
 ## Features
 
 - Caches Godot and templates, so only downloads once.

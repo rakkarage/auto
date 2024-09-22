@@ -21,14 +21,16 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       matrix: ${{ steps.parse.outputs.matrix }}
-      web: ${{ steps.check.outputs.web }}
+      web: ${{ steps.parse.outputs.web }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
           submodules: true
-      - name: Validate
+      - name: Parse
+        id: parse
         run: |
+          # error if presets file missing/empty or input malformed
           if [ ! -f export_presets.cfg ] || [ ! -s export_presets.cfg ]; then
             echo "> [!CAUTION]" >> $GITHUB_STEP_SUMMARY
             echo "> `export_presets.cfg` is missing or empty, nothing to do." >> $GITHUB_STEP_SUMMARY
@@ -41,6 +43,50 @@ jobs:
             echo "> [!CAUTION]" >> $GITHUB_STEP_SUMMARY
             echo "> Invalid boolean input: ${DELETE_OLD_PAGES}. Must be 'true' or 'false'." >> $GITHUB_STEP_SUMMARY
             exit 3
+          fi
+
+          # generate dynamic platform matrix based on presets file
+          awk_output=$(awk -F= '
+          BEGIN { printf "["; first=1 }
+          /^\s*platform/ { platform=$2; gsub(/^"|"$/, "", platform) }
+          /^\s*export_path/ {
+            path=$2; gsub(/^"|"$/, "", path)
+            if (path == "") {
+              path = (platform == "Linux") ? "${{ github.event.repository.name }}.x86_64" :
+                     (platform == "macOS") ? "${{ github.event.repository.name }}.zip" :
+                     (platform == "Web") ? "index.html" :
+                     (platform == "Windows Desktop") ? "${{ github.event.repository.name }}.exe" : ""
+            }
+            if (platform == "Linux") linux_found=true
+            if (platform == "Linux/X11") linux_x11_found=true
+            platform_dir = (platform == "Windows Desktop") ? "Windows" :
+                           (platform == "Linux/X11") ? "Linux" : platform
+            n = split(path, arr, "/")
+            split(arr[n], file_parts, ".")
+            printf "%s{\"target\":\"%s\",\"dir\":\"%s\",\"file\":\"%s\",\"ext\":\"%s\"}",
+                   (first ? "" : ","), platform, platform_dir, file_parts[1], file_parts[2]
+            first=0
+          }
+          END { print "]" }' export_presets.cfg)
+          echo "matrix=$awk_output" >> $GITHUB_OUTPUT
+
+          # warn if version < 4.3 and Linux/X11 not found but Linux found
+          if [[ "${GODOT_VERSION}" < "4.3" && "$linux_found" == "true" && "$linux_x11_found" == "false" ]]; then
+            echo "> [!WARNING]" >> $GITHUB_STEP_SUMMARY
+            echo "> Linux platform found, but Linux/X11 is missing for Godot version < 4.3." >> $GITHUB_STEP_SUMMARY
+          fi
+
+          # warn if version > 4.2 and Linux not found but Linux/X11 found
+          if [[ "${GODOT_VERSION}" > "4.2" && "$linux_found" == "false" && "$linux_x11_found" == "true" ]]; then
+            echo "> [!WARNING]" >> $GITHUB_STEP_SUMMARY
+            echo "> Linux/X11 platform found, but Linux is missing for Godot version > 4.2." >> $GITHUB_STEP_SUMMARY
+          fi
+
+          # deploy job needed?
+          if echo "$matrix_output" | grep -q '"target":"Web"'; then
+            echo "web=true" >> $GITHUB_OUTPUT
+          else
+            echo "web=false" >> $GITHUB_OUTPUT
           fi
       - name: Cache
         id: cache
@@ -57,39 +103,6 @@ jobs:
           unzip -q godot.zip && mv Godot_v${GODOT_VERSION}-stable_linux.x86_64 godot && chmod +x godot
           curl -L -o templates.tpz https://downloads.tuxfamily.org/godotengine/${GODOT_VERSION}/Godot_v${GODOT_VERSION}-stable_export_templates.tpz
           mkdir -p ~/.local/share/godot/export_templates/${GODOT_VERSION}.stable && unzip -q templates.tpz && mv templates/* ~/.local/share/godot/export_templates/${GODOT_VERSION}.stable
-      - name: Parse
-        id: parse
-        run: |
-          awk_output=$(awk -F= '
-          BEGIN { printf "["; first=1 }
-          /^\s*platform/ { platform=$2; gsub(/^"|"$/, "", platform) }
-          /^\s*export_path/ {
-            path=$2; gsub(/^"|"$/, "", path)
-            if (path == "") {
-              path = (platform == "Linux") ? "${{ github.event.repository.name }}.x86_64" :
-                     (platform == "macOS") ? "${{ github.event.repository.name }}.zip" :
-                     (platform == "Web") ? "index.html" :
-                     (platform == "Windows Desktop") ? "${{ github.event.repository.name }}.exe" : ""
-            }
-            platform_dir = (platform == "Windows Desktop") ? "Windows" :
-                           (platform == "Linux/X11") ? "Linux" : platform
-            n = split(path, arr, "/")
-            split(arr[n], file_parts, ".")
-            printf "%s{\"target\":\"%s\",\"dir\":\"%s\",\"file\":\"%s\",\"ext\":\"%s\"}",
-                   (first ? "" : ","), platform, platform_dir, file_parts[1], file_parts[2]
-            first=0
-          }
-          END { print "]" }' export_presets.cfg)
-          echo "matrix=$awk_output" >> $GITHUB_OUTPUT
-      - name: Check
-        id: check
-        run: |
-          matrix_output='${{ steps.parse.outputs.matrix }}'
-          if echo "$matrix_output" | grep -q '"target":"Web"'; then
-            echo "web=true" >> $GITHUB_OUTPUT
-          else
-            echo "web=false" >> $GITHUB_OUTPUT
-          fi
   Build: # Export the project for each target platform concurrently.
     needs: [Setup]
     runs-on: ubuntu-latest
