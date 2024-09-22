@@ -1,19 +1,21 @@
 # auto
 
-## Gobot
+## Gobot&nbsp;🤖
 
-This workflow is designed to automate the process of building and deploying godot projects.
+This workflow is designed to automate the process of building and deploying Godot projects.
 
 ## Features
 
-- Caches godot and templates, so only downloads once.
+- Caches Godot and templates, so only downloads once.
 - Parses build settings from `export_presets.cfg` to generates a custom strategy matrix to run all builds concurrently.
-  - Do not need to set file names or paths just have the platform present in the file.
-- Deletes old repository GitHub Pages deployments.
+	- Do not need to set file names or paths just have
+	the platform present in the file.
+	- Will use your file and extension names if set. Except web which will use `index.htm` to deploy correctly.
+- Optionally deletes old repository GitHub Pages deployments.
 - Deploys web artifact to the repository GitHub Pages environment.
 
 > [!WARNING]
-> Old repository GitHub Pages deployments will be deleted.
+> Old repository GitHub Pages deployments can be deleted.
 
 ## Workflow Overview
 
@@ -25,19 +27,16 @@ This workflow is designed to automate the process of building and deploying godo
 ### Jobs
 
 1. **Setup**
-   - Caches or downloads the Godot engine and export templates based on the provided `godot-version`.
+	- Download and cache Godot and Export Templates.
 
 2. **Parse**
-   - Parses the `export_presets.cfg` file to generate a matrix of platforms and default export paths.
+	- Analyze input and `export_presets.cfg` to generate a dynamic platform matrix, and check for web export.
 
 3. **Build**
-   - Builds the project for each platform defined in the matrix.
-   - Exports to the appropriate directories with the platform-specific filenames and extensions.
-   - Uploads the artifacts for each platform, including a special step for Web exports.
+	- Export the project for each target platform concurrently.
 
-5. **Deploy** (Conditional)
-   - Cleans up old GitHub Pages deployments if the Web export is included.
-   - Deploys the Web export to GitHub Pages if available.
+5. **Deploy**
+	- Deploy Web build to Pages after optionally deleting old Pages deployments.
 
 ## Usage
 
