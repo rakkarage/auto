@@ -160,7 +160,8 @@ jobs:
               console.log('No deployments to delete.');
               return;
             }
-            for (const deployment of deployments) {
+            for (let i = deployments.length - 1; i >= 0; i--) {
+              const deployment = deployments[i];
               if (deployment.environment === environmentName) {
                 await github.rest.repos.deleteDeployment({
                   owner: context.repo.owner,
