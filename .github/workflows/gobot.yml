@@ -71,7 +71,7 @@ jobs:
           END { print "]" }' export_presets.cfg)
           echo "matrix=$awk_output" >> $GITHUB_OUTPUT
 
-          if "$web_found" == "true"; then
+          if [[ "$web_found" == "true" ]]; then
             echo "web=true" >> $GITHUB_OUTPUT
           fi
 
