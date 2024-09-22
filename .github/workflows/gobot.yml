@@ -145,11 +145,28 @@ jobs:
     steps:
       - name: Delete
         if: ${{ github.event.inputs.delete-old-pages == 'true' }}
-        uses: strumwolf/delete-deployment-environment@v3
+        uses: actions/github-script@v6
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          environment: github-pages
-          onlyRemoveDeployments: true
+          script: |
+            const environmentName = '${{ job.environment.name }}';
+            const { data: deployments } = await github.repos.listDeployments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+            });
+            if (deployments.length === 0) {
+              console.log('No deployments to delete.');
+              return;
+            }
+            for (const deployment of deployments) {
+              if (deployment.environment === environmentName) {
+                await github.repos.deleteDeployment({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  deployment_id: deployment.id,
+                });
+                console.log(`Deleted deployment: ${deployment.id}`);
+              }
+            }
       - name: Configure
         uses: actions/configure-pages@v5
       - name: Deploy
