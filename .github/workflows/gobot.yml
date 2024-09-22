@@ -59,7 +59,7 @@ jobs:
             }
             if (platform == "Linux") linux_found=true
             if (platform == "Linux/X11") linux_x11_found=true
-            if (platform -- "Web") web_found=true
+            if (platform == "Web") web_found=true
             platform_dir = (platform == "Windows Desktop") ? "Windows" :
                            (platform == "Linux/X11") ? "Linux" : platform
             n = split(path, arr, "/")
