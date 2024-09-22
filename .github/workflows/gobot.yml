@@ -154,7 +154,7 @@ jobs:
             console.log(`Checking deployments for environment: ${name}`);
             console.log(github);
             console.log(github.repos)
-            const { data: deployments } = await github.repos.listDeployments({
+            const { data: deployments } = await github.rest.repos.listDeployments({
               owner: context.repo.owner,
               repo: context.repo.repo,
             });
@@ -164,7 +164,7 @@ jobs:
             }
             for (const deployment of deployments) {
               if (deployment.environment === environmentName) {
-                await github.repos.deleteDeployment({
+                await github.rest.repos.deleteDeployment({
                   owner: context.repo.owner,
                   repo: context.repo.repo,
                   deployment_id: deployment.id,
