@@ -147,7 +147,7 @@ jobs:
         if: ${{ github.event.inputs.delete-old-pages == 'true' }}
         uses: actions/github-script@v7
         env:
-          ENVIRONMENT: "${{ job.environment.name }}"
+          ENVIRONMENT: "${{ job.environment.environmentName }}"
         with:
           script: |
             const environmentName = process.env.ENVIRONMENT;
