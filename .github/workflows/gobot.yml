@@ -49,7 +49,7 @@ jobs:
         id: validate
         run: |
           if [ ! -f export_presets.cfg ] || [ ! -s export_presets.cfg ]; then
-            echo "> [!CAUTION]"" >> $GITHUB_STEP_SUMMARY
+            echo "> [!CAUTION]" >> $GITHUB_STEP_SUMMARY
             echo "> `export_presets.cfg` is missing or empty, nothing to do." >> $GITHUB_STEP_SUMMARY
             exit 1
           elif ! [[ "${GODOT_VERSION}" =~ ^[0-9]+\.[0-9]+(\.[0-9]+)?$ ]]; then
