@@ -59,7 +59,9 @@ jobs:
             }
             if (platform == "Linux") linux_found=true
             if (platform == "Linux/X11") linux_x11_found=true
-            if (platform -- "Web") echo "web=true" >> $GITHUB_OUTPUT
+            if (platform -- "Web") {
+              echo "web=true" >> $GITHUB_OUTPUT
+            }
             platform_dir = (platform == "Windows Desktop") ? "Windows" :
                            (platform == "Linux/X11") ? "Linux" : platform
             n = split(path, arr, "/")
