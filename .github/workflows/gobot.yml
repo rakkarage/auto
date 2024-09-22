@@ -57,9 +57,6 @@ jobs:
                      (platform == "Web") ? "index.html" :
                      (platform == "Windows Desktop") ? "${{ github.event.repository.name }}.exe" : ""
             }
-            if (platform == "Linux") linux_found=true
-            if (platform == "Linux/X11") linux_x11_found=true
-            if (platform == "Web") web_found=true
             platform_dir = (platform == "Windows Desktop") ? "Windows" :
                            (platform == "Linux/X11") ? "Linux" : platform
             n = split(path, arr, "/")
@@ -70,7 +67,14 @@ jobs:
           }
           END { print "]" }' export_presets.cfg)
           echo "matrix=$awk_output" >> $GITHUB_OUTPUT
-          echo "$awk_output"
+
+          linux_found=$(echo "$matrix" | jq 'map(select(.target == "Linux")) | length')
+          linux_x11_found=$(echo "$matrix" | jq 'map(select(.target == "Linux/X11")) | length')
+          web_found=$(echo "$matrix" | jq 'map(select(.target == "Web")) | length')
+
+          echo "$linux_found"
+          echo "$linux_x11_found"
+          echo "$web_found"
 
           if [[ "$web_found" == "true" ]]; then
             echo "web=true" >> $GITHUB_OUTPUT
