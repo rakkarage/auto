@@ -59,9 +59,7 @@ jobs:
             }
             if (platform == "Linux") linux_found=true
             if (platform == "Linux/X11") linux_x11_found=true
-            if (platform -- "Web") {
-              echo "web=true" >> $GITHUB_OUTPUT
-            }
+            if (platform -- "Web") web_found=true
             platform_dir = (platform == "Windows Desktop") ? "Windows" :
                            (platform == "Linux/X11") ? "Linux" : platform
             n = split(path, arr, "/")
@@ -72,6 +70,10 @@ jobs:
           }
           END { print "]" }' export_presets.cfg)
           echo "matrix=$awk_output" >> $GITHUB_OUTPUT
+
+          if "$web_found" == "true"; then
+            echo "web=true" >> $GITHUB_OUTPUT
+          fi
 
           # warn if version < 4.3 and Linux/X11 not found but Linux found
           if [[ "$(printf '%s\n' "${GODOT_VERSION}" "4.3" | sort -V | head -n1)" != "4.3" && "$linux_found" == "true" && "$linux_x11_found" == "false" ]]; then
