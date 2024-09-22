@@ -149,12 +149,7 @@ jobs:
         with:
           script: |
             const environmentName = '${{ job.environment.environmentName }}';
-            console.log(`Checking deployments for environment: ${environmentName}`);
-            const name = '${{ job.environment.name }}';
-            console.log(`Checking deployments for environment: ${name}`);
-            console.log(github);
-            console.log(github.rest.repos)
-            const { data: deployments } = await github.rest.repos.listDeployments({
+            const { data: deployments } = await octokit.rest.repos.listDeployments({
               owner: context.repo.owner,
               repo: context.repo.repo,
             });
@@ -164,7 +159,7 @@ jobs:
             }
             for (const deployment of deployments) {
               if (deployment.environment === environmentName) {
-                await github.rest.repos.deleteDeployment({
+                await octokit.rest.repos.deleteDeployment({
                   owner: context.repo.owner,
                   repo: context.repo.repo,
                   deployment_id: deployment.id,
