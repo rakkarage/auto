@@ -60,8 +60,6 @@ jobs:
             echo "> [!CAUTION]" >> $GITHUB_STEP_SUMMARY
             echo "> Invalid boolean input: ${DELETE_OLD_PAGES}. Must be 'true' or 'false'." >> $GITHUB_STEP_SUMMARY
             exit 3
-          else
-            echo "valid=true" >> $GITHUB_OUTPUT
           fi
       - name: Parse
         id: parse
