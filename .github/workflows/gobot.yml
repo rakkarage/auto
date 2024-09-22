@@ -27,7 +27,7 @@ jobs:
           path: |
             ./godot
             ~/.local/share/godot/export_templates/${{ env.GODOT_VERSION }}.stable
-          key: '${{ runner.os }}_Godot_${{ env.GODOT_VERSION }}'
+          key: ${{ runner.os }}_Godot_${{ env.GODOT_VERSION }}
       - name: Cache Godot
         if: steps.cache.outputs.cache-hit != 'true'
         run: |
@@ -112,25 +112,25 @@ jobs:
           path: |
             ./godot
             ~/.local/share/godot/export_templates/${{ env.GODOT_VERSION }}.stable
-          key: '${{ runner.os }}_Godot_${{ env.GODOT_VERSION }}'
+          key: ${{ runner.os }}_Godot_${{ env.GODOT_VERSION }}
       - name: Import
         run: ./godot --headless --verbose --editor --quit
       - name: Export
         run: |
-          mkdir -p 'build/${{ matrix.dir }}'
-          ./godot --headless --verbose --export-release '${{ matrix.target }}' 'build/${{ matrix.dir }}/${{ matrix.file }}.${{ matrix.ext }}'
+          mkdir -p "build/${{ matrix.dir }}"
+          ./godot --headless --verbose --export-release "${{ matrix.target }}" "build/${{ matrix.dir }}/${{ matrix.file }}.${{ matrix.ext }}"
       - name: Upload Web
         if: matrix.target == 'Web'
         uses: actions/upload-pages-artifact@v3
         with:
-          name: '${{ github.event.repository.name }}_${{ matrix.dir }}_Godot_${{ env.GODOT_VERSION }}'
-          path: 'build/${{ matrix.dir }}'
+          name: ${{ github.event.repository.name }}_${{ matrix.dir }}_Godot_${{ env.GODOT_VERSION }}
+          path: build/${{ matrix.dir }}
       - name: Upload Not Web
         if: matrix.target != 'Web'
         uses: actions/upload-artifact@v4
         with:
-          name: '${{ github.event.repository.name }}_${{ matrix.dir }}_Godot_${{ env.GODOT_VERSION }}'
-          path: 'build/${{ matrix.dir }}'
+          name: ${{ github.event.repository.name }}_${{ matrix.dir }}_Godot_${{ env.GODOT_VERSION }}
+          path: build/${{ matrix.dir }}
   Deploy: # Delete old Pages deployments and deploy Web build to Pages.
     needs: [Setup, Parse, Build]
     if: needs.Parse.outputs.web == 'true'
