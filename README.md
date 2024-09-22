@@ -4,9 +4,6 @@
 
 This workflow is designed to automate the process of building and deploying Godot projects.
 
-![](screenshot1.png)
-![](screenshot2.png)
-
 ## Features
 
 - Caches Godot and templates, so only downloads once.
@@ -64,6 +61,11 @@ jobs:
       godot-version: ${{ github.event.inputs.godot-version }}
       delete-old-pages: ${{ github.event.inputs.delete-old-pages }}
 ```
+
+## Screenshots
+
+![](screenshot1.png)
+![](screenshot2.png)
 
 ## Todo
 
