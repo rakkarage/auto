@@ -17,7 +17,7 @@ env:
   GODOT_VERSION: ${{ github.event.inputs.godot-version }}
   DELETE_OLD_PAGES: ${{ github.event.inputs.delete-old-pages }}
 jobs:
-  Setup: # Analyze input and to generate a dynamic platform matrix, and cache Godot and Export Templates.
+  Setup: # Cache Godot and Export Templates, and analyze input to generate a dynamic platform matrix.
     runs-on: ubuntu-latest
     outputs:
       matrix: ${{ steps.parse.outputs.matrix }}

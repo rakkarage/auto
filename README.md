@@ -27,10 +27,7 @@ This workflow is designed to automate the process of building and deploying Godo
 ### Jobs
 
 1. **Setup**
-	- Download and cache Godot and Export Templates.
-
-2. **Parse**
-	- Analyze input and `export_presets.cfg` to generate a dynamic platform matrix, and check for web export.
+	- Cache Godot and Export Templates, and analyze input to generate a dynamic platform matrix.
 
 3. **Build**
 	- Export the project for each target platform concurrently.
