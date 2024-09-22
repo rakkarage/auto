@@ -148,7 +148,7 @@ jobs:
         uses: actions/github-script@v7
         with:
           script: |
-            const environmentName = '${{ job.environment.name }}';
+            const environmentName = '${{ job.environment.environmentName }}';
             const { data: deployments } = await github.repos.listDeployments({
               owner: context.repo.owner,
               repo: context.repo.repo,
