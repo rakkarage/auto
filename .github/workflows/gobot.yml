@@ -68,13 +68,9 @@ jobs:
           END { print "]" }' export_presets.cfg)
           echo "matrix=$awk_output" >> $GITHUB_OUTPUT
 
-          linux_found=$(echo "$matrix" | jq 'map(select(.target == "Linux")) | length')
-          linux_x11_found=$(echo "$matrix" | jq 'map(select(.target == "Linux/X11")) | length')
-          web_found=$(echo "$matrix" | jq 'map(select(.target == "Web")) | length')
-
-          echo "$linux_found"
-          echo "$linux_x11_found"
-          echo "$web_found"
+          linux_found=$(echo "$awk_output" | jq 'map(select(.target == "Linux")) | length')
+          linux_x11_found=$(echo "$awk_output" | jq 'map(select(.target == "Linux/X11")) | length')
+          web_found=$(echo "$awk_output" | jq 'map(select(.target == "Web")) | length')
 
           if [[ "$web_found" == "true" ]]; then
             echo "web=true" >> $GITHUB_OUTPUT
