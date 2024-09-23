@@ -33,7 +33,7 @@ jobs:
           # error if presets file missing/empty or input malformed
           if [ ! -f export_presets.cfg ] || [ ! -s export_presets.cfg ]; then
             echo "> [!CAUTION]" >> $GITHUB_STEP_SUMMARY
-            echo "> `export_presets.cfg` is missing or empty, nothing to do." >> $GITHUB_STEP_SUMMARY
+            echo "> /`export_presets.cfg/` is missing or empty. Nothing to do." >> $GITHUB_STEP_SUMMARY
             exit 1
           elif ! [[ "${GODOT_VERSION}" =~ ^[0-9]+\.[0-9]+(\.[0-9]+)?$ ]]; then
             echo "> [!CAUTION]" >> $GITHUB_STEP_SUMMARY
@@ -77,14 +77,14 @@ jobs:
           # warn if version < 4.3 and Linux/X11 not found but Linux found
           if [[ "$(printf '%s\n' "${GODOT_VERSION}" "4.3" | sort -V | head -n1)" != "4.3" && "$linux_found" -gt 0 && "$linux_x11_found" -eq 0 ]]; then
             echo "> [!WARNING]" >> $GITHUB_STEP_SUMMARY
-            echo "> The \`Linux\` platform is found in your export presets, but the \`Linux/X11\` platform is missing. For Godot versions earlier than 4.3, the \`Linux/X11\` platform is expected." >> $GITHUB_STEP_SUMMARY
+            echo "> \`Linux\` platform found, but \`Linux/X11\` missing. Godot < 4.3 expects \`Linux/X11\`. Ignoring /`Linux/`." >> $GITHUB_STEP_SUMMARY
             awk_output=$(echo "$awk_output" | jq -c 'map(select(.target != "Linux"))')
           fi
 
           # warn if version > 4.2 and Linux not found but Linux/X11 found
           if [[ "$(printf '%s\n' "${GODOT_VERSION}" "4.2" | sort -V | head -n1)" == "4.2" && "$linux_found" -eq 0 && "$linux_x11_found" -gt 0 ]]; then
             echo "> [!WARNING]" >> $GITHUB_STEP_SUMMARY
-            echo "> The \`Linux/X11\` platform is found in your export presets, but the \`Linux\` platform is missing. For Godot versions later than 4.2, the \`Linux\` platform is expected." >> $GITHUB_STEP_SUMMARY
+            echo "> \`Linux/X11\` platform found, but \`Linux\` missing. Godot ≥ 4.3 expects \`Linux\`. Ignoring /`Linux/X11/`." >> $GITHUB_STEP_SUMMARY
             awk_output=$(echo "$awk_output" | jq -c 'map(select(.target != "Linux/X11"))')
           fi
 
@@ -92,11 +92,11 @@ jobs:
           if [[ "$linux_found" -gt 0 && "$linux_x11_found" -gt 0 ]]; then
             if [[ "$(printf '%s\n' "${GODOT_VERSION}" "4.3" | sort -V | head -n1)" == "4.3" ]]; then
               echo "> [!NOTE]" >> $GITHUB_STEP_SUMMARY
-              echo "> Both \`Linux\` and \`Linux/X11\` are found in your export presets. For Godot 4.3 or later, \`Linux\` is used. ignoring \`Linux/X11\`." >> $GITHUB_STEP_SUMMARY
+              echo "> \`Linux\` and \`Linux/X11\` found. Godot ≥ 4.3 expects \`Linux\`. Ignoring /`Linux/X11/`." >> $GITHUB_STEP_SUMMARY
               awk_output=$(echo "$awk_output" | jq -c 'map(select(.target != "Linux/X11"))')
             else
               echo "> [!NOTE]" >> $GITHUB_STEP_SUMMARY
-              echo "> Both \`Linux\` and \`Linux/X11\` are found in your export presets. For Godot before 4.3, \`Linux/X11\` is used. Ignoring \`Linux\`." >> $GITHUB_STEP_SUMMARY
+              echo "> \`Linux\` and \`Linux/X11\` found. Godot < 4.3 expects \`Linux/X11\`. Ignoring /`Linux/`." >> $GITHUB_STEP_SUMMARY
               awk_output=$(echo "$awk_output" | jq -c 'map(select(.target != "Linux"))')
             fi
           fi
