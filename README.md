@@ -8,9 +8,9 @@ This workflow is designed to automate the process of building and deploying Godo
 
 - Caches Godot and templates, so only downloads once.
 - Parses build settings from `export_presets.cfg` to generates a custom strategy matrix to run all builds concurrently.
-	- Do not need to set file names or paths just have
-	the platform present in the file.
+	- Do not need to set file names or paths just have the platform present in the file.
 	- Will use your file and extension names if set. Except web which will use `index.htm` to deploy correctly.
+	- Detects if both Linux (>=4.3) and Linux/X11 (<4.3) platforms exist in file and uses only the right one based on version.
 - Optionally deletes old repository GitHub Pages deployments.
 - Deploys web artifact to the repository GitHub Pages environment.
 
