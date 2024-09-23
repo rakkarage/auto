@@ -31,7 +31,7 @@ jobs:
       - name: Parse
         id: parse
         run: |
-          # error if presets file missing/empty or input malformed
+          # error if presets file missing/empty, or input malformed
           if [ ! -f export_presets.cfg ] || [ ! -s export_presets.cfg ]; then
             echo "> [!CAUTION]" >> $GITHUB_STEP_SUMMARY
             echo "> \`export_presets.cfg\` is missing or empty. Nothing to do." >> $GITHUB_STEP_SUMMARY
