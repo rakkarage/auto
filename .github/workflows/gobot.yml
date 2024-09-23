@@ -72,21 +72,18 @@ jobs:
           linux_x11_found=$(echo "$awk_output" | jq 'map(select(.target == "Linux/X11")) | length')
           web_found=$(echo "$awk_output" | jq 'map(select(.target == "Web")) | length')
 
-          if [[ "$web_found" == "true" ]]; then
+          if [[ "$web_found" -gt 0 ]]; then
             echo "web=true" >> $GITHUB_OUTPUT
           fi
-          echo "$web_found"
-
-          echo "$GITHUB_OUTPUT"
 
           # warn if version < 4.3 and Linux/X11 not found but Linux found
-          if [[ "$(printf '%s\n' "${GODOT_VERSION}" "4.3" | sort -V | head -n1)" != "4.3" && "$linux_found" == "true" && "$linux_x11_found" == "false" ]]; then
+          if [[ "$(printf '%s\n' "${GODOT_VERSION}" "4.3" | sort -V | head -n1)" != "4.3" && "$linux_found" -gt 0 && "$linux_x11_found" -eq 0 ]]; then
             echo "> [!WARNING]" >> $GITHUB_STEP_SUMMARY
             echo "> Linux platform found, but Linux/X11 is missing for Godot version < 4.3." >> $GITHUB_STEP_SUMMARY
           fi
 
           # warn if version > 4.2 and Linux not found but Linux/X11 found
-          if [[ "$(printf '%s\n' "${GODOT_VERSION}" "4.2" | sort -V | head -n1)" == "4.2" && "$linux_found" == "false" && "$linux_x11_found" == "true" ]]; then
+          if [[ "$(printf '%s\n' "${GODOT_VERSION}" "4.2" | sort -V | head -n1)" == "4.2" && "$linux_found" -eq 0 && "$linux_x11_found" -gt 0 ]]; then
             echo "> [!WARNING]" >> $GITHUB_STEP_SUMMARY
             echo "> Linux/X11 platform found, but Linux is missing for Godot version > 4.2." >> $GITHUB_STEP_SUMMARY
           fi
