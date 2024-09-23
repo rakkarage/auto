@@ -67,6 +67,12 @@ jobs:
           }
           END { print "]" }' export_presets.cfg)
 
+          linux_found=$(echo "$awk_output" | jq 'map(select(.target == "Linux")) | length')
+          linux_x11_found=$(echo "$awk_output" | jq 'map(select(.target == "Linux/X11")) | length')
+          if [[ $(echo "$awk_output" | jq 'map(select(.target == "Web")) | length') -gt 0 ]]; then
+            echo "web=true" >> $GITHUB_OUTPUT
+          fi
+
           # Warn if version < 4.3 and Linux/X11 not found but Linux found
           if [[ "$(printf '%s\n' "${GODOT_VERSION}" "4.3" | sort -V | head -n1)" != "4.3" && "$linux_found" -gt 0 && "$linux_x11_found" -eq 0 ]]; then
               echo "> [!NOTE]" >> $GITHUB_STEP_SUMMARY
@@ -83,10 +89,6 @@ jobs:
               awk_output=$(echo "$awk_output" | jq -c 'map(if .target == "Linux/X11" then .target = "Linux" else . end)')
               sed -i 's/name="Linux\/X11"/name="Linux"/g' export_presets.cfg
               sed -i 's/platform="Linux\/X11"/platform="Linux"/g' export_presets.cfg
-          fi
-
-          if [[ $(echo "$awk_output" | jq 'map(select(.target == "Web")) | length') -gt 0 ]]; then
-            echo "web=true" >> $GITHUB_OUTPUT
           fi
 
           echo "matrix=$awk_output" >> $GITHUB_OUTPUT
