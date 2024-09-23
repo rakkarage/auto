@@ -101,7 +101,7 @@ jobs:
             fi
           fi
 
-          echo "matrix=$awk_output" >> $GITHUB_OUTPUT
+          echo "$awk_output" && echo "matrix=$awk_output" >> $GITHUB_OUTPUT
       - name: Cache
         id: cache
         uses: actions/cache@v4
