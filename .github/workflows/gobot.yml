@@ -67,12 +67,14 @@ jobs:
             first=0
           }
           END { print "]" }' export_presets.cfg)
+          echo "$awk_output"
 
           linux_found=$(echo "$awk_output" | jq 'any(.target == "Linux")')
           linux_x11_found=$(echo "$awk_output" | jq 'any(.target == "Linux/X11")')
           if echo "$awk_output" | jq 'any(.target == "Web")'; then
             echo "web=true" >> $GITHUB_OUTPUT
           fi
+          echo "$awk_output"
 
           # warn if version < 4.3 and Linux/X11 not found but Linux found, and make it work
           if [[ "$(printf '%s\n' "${GODOT_VERSION}" "4.3" | sort -V | head -n1)" != "4.3" && "$linux_found" == "true" && "$linux_x11_found" == "false" ]]; then
@@ -82,6 +84,7 @@ jobs:
               sed -i -e 's/name="Linux"/name="Linux\/X11"/g' -e 's/platform="Linux"/platform="Linux\/X11"/g' export_presets.cfg
               echo "modified=true" >> $GITHUB_OUTPUT
           fi
+          echo "$awk_output"
 
           # warn if version >= 4.3 and Linux not found but Linux/X11 found, and make it work
           if [[ "$(printf '%s\n' "${GODOT_VERSION}" "4.3" | sort -V | head -n1)" == "4.3" && "$linux_found" == "false" && "$linux_x11_found" == "true" ]]; then
@@ -91,6 +94,7 @@ jobs:
               sed -i -e 's/name="Linux\/X11"/name="Linux"/g' -e 's/platform="Linux\/X11"/platform="Linux"/g' export_presets.cfg
               echo "modified=true" >> $GITHUB_OUTPUT
           fi
+          echo "$awk_output"
 
           echo "matrix=$awk_output" >> $GITHUB_OUTPUT
           echo "$awk_output"
