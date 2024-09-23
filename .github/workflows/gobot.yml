@@ -93,6 +93,7 @@ jobs:
           fi
 
           echo "matrix=$awk_output" >> $GITHUB_OUTPUT
+          echo "$awk_output"
       - name: Upload
         if: steps.parse.outputs.modified == 'true'
         uses: actions/upload-artifact@v4
