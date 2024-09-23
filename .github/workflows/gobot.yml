@@ -81,10 +81,10 @@ jobs:
             awk_output=$(echo "$awk_output" | jq -c 'map(select(.target != "Linux"))')
           fi
 
-          # warn if version > 4.2 and Linux not found but Linux/X11 found
-          if [[ "$(printf '%s\n' "${GODOT_VERSION}" "4.2" | sort -V | head -n1)" == "4.2" && "$linux_found" -eq 0 && "$linux_x11_found" -gt 0 ]]; then
+          # warn if version >= 4.3 and Linux not found but Linux/X11 found
+          if [[ "$(printf '%s\n' "${GODOT_VERSION}" "4.3" | sort -V | head -n1)" == "4.3" && "$linux_found" -eq 0 && "$linux_x11_found" -gt 0 ]]; then
             echo "> [!WARNING]" >> $GITHUB_STEP_SUMMARY
-            echo "> \`Linux/X11\` platform found, but \`Linux\` missing. Godot ≥ 4.3 expects \`Linux\`. Ignoring /`Linux/X11/`." >> $GITHUB_STEP_SUMMARY
+            echo "> \`Linux/X11\` platform found, but \`Linux\` missing. Godot >= 4.3 expects \`Linux\`. Ignoring /`Linux/X11/`." >> $GITHUB_STEP_SUMMARY
             awk_output=$(echo "$awk_output" | jq -c 'map(select(.target != "Linux/X11"))')
           fi
 
