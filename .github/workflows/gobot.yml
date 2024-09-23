@@ -52,7 +52,7 @@ jobs:
           /^\s*export_path/ {
             path=$2; gsub(/^"|"$/, "", path)
             if (path == "") {
-              path = (platform == "Linux") ? "${{ github.event.repository.name }}.x86_64" :
+              path = (platform == "Linux") || (platform == "Linux/X11") ? "${{ github.event.repository.name }}.x86_64" :
                      (platform == "macOS") ? "${{ github.event.repository.name }}.zip" :
                      (platform == "Web") ? "index.html" :
                      (platform == "Windows Desktop") ? "${{ github.event.repository.name }}.exe" : ""
@@ -66,12 +66,10 @@ jobs:
             first=0
           }
           END { print "]" }' export_presets.cfg)
-          echo "matrix=$awk_output" >> $GITHUB_OUTPUT
 
           linux_found=$(echo "$awk_output" | jq 'map(select(.target == "Linux")) | length')
           linux_x11_found=$(echo "$awk_output" | jq 'map(select(.target == "Linux/X11")) | length')
           web_found=$(echo "$awk_output" | jq 'map(select(.target == "Web")) | length')
-
           if [[ "$web_found" -gt 0 ]]; then
             echo "web=true" >> $GITHUB_OUTPUT
           fi
@@ -80,13 +78,30 @@ jobs:
           if [[ "$(printf '%s\n' "${GODOT_VERSION}" "4.3" | sort -V | head -n1)" != "4.3" && "$linux_found" -gt 0 && "$linux_x11_found" -eq 0 ]]; then
             echo "> [!WARNING]" >> $GITHUB_STEP_SUMMARY
             echo "> The \`Linux\` platform is found in your export presets, but the \`Linux/X11\` platform is missing. For Godot versions earlier than 4.3, the \`Linux/X11\` platform is expected." >> $GITHUB_STEP_SUMMARY
+            awk_output=$(echo "$awk_output" | jq 'map(select(.target != "Linux"))')
           fi
 
           # warn if version > 4.2 and Linux not found but Linux/X11 found
           if [[ "$(printf '%s\n' "${GODOT_VERSION}" "4.2" | sort -V | head -n1)" == "4.2" && "$linux_found" -eq 0 && "$linux_x11_found" -gt 0 ]]; then
             echo "> [!WARNING]" >> $GITHUB_STEP_SUMMARY
             echo "> The \`Linux/X11\` platform is found in your export presets, but the \`Linux\` platform is missing. For Godot versions later than 4.2, the \`Linux\` platform is expected." >> $GITHUB_STEP_SUMMARY
+            awk_output=$(echo "$awk_output" | jq 'map(select(.target != "Linux/X11"))')
           fi
+
+          # if both, remove 1
+          if [[ "$linux_found" -gt 0 && "$linux_x11_found" -gt 0 ]]; then
+            if [[ "$(printf '%s\n' "${GODOT_VERSION}" "4.3" | sort -V | head -n1)" == "4.3" ]]; then
+              echo "> [!IMPORTANT]" >> $GITHUB_STEP_SUMMARY
+              echo "> Both \`Linux\` and \`Linux/X11\` are found in your export presets. For Godot 4.3 or later, \`Linux/X11\` is deprecated. Removing \`Linux/X11\`." >> $GITHUB_STEP_SUMMARY
+              awk_output=$(echo "$awk_output" | jq 'map(select(.target != "Linux/X11"))')
+            else
+              echo "> [!IMPORTANT]" >> $GITHUB_STEP_SUMMARY
+              echo "> Both \`Linux\` and \`Linux/X11\` are found in your export presets. For Godot versions earlier than 4.3, \`Linux\` is deprecated. Removing \`Linux\`." >> $GITHUB_STEP_SUMMARY
+              awk_output=$(echo "$awk_output" | jq 'map(select(.target != "Linux"))')
+            fi
+          fi
+
+          echo "matrix=$awk_output" >> $GITHUB_OUTPUT
       - name: Cache
         id: cache
         uses: actions/cache@v4
