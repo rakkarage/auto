@@ -148,7 +148,7 @@ jobs:
           ./godot --headless --verbose --export-release "${{ matrix.target }}" "build/${{ matrix.dir }}/${{ matrix.file }}.${{ matrix.ext }}"
       - name: Delete
         if: needs.Setup.outputs.modified == 'true'
-        uses: actions/delete-artifact@v2
+        uses: geekyeggo/delete-artifact@v5
         with:
           name: export_presets
       - name: Upload Web
