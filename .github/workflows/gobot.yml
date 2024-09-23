@@ -66,6 +66,7 @@ jobs:
             first=0
           }
           END { print "]" }' export_presets.cfg)
+          echo "$awk_output"
 
           linux_found=$(echo "$awk_output" | jq 'map(select(.target == "Linux")) | length')
           linux_x11_found=$(echo "$awk_output" | jq 'map(select(.target == "Linux/X11")) | length')
