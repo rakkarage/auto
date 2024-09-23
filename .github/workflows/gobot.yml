@@ -66,7 +66,6 @@ jobs:
             first=0
           }
           END { print "]" }' export_presets.cfg)
-          echo "$awk_output"
 
           linux_found=$(echo "$awk_output" | jq 'map(select(.target == "Linux")) | length')
           linux_x11_found=$(echo "$awk_output" | jq 'map(select(.target == "Linux/X11")) | length')
@@ -110,7 +109,7 @@ jobs:
             exit 4
           fi
 
-          echo "$awk_output" && echo "matrix=$awk_output" >> $GITHUB_OUTPUT
+          echo "matrix=$awk_output" >> $GITHUB_OUTPUT
       - name: Cache
         id: cache
         uses: actions/cache@v4
