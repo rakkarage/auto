@@ -104,6 +104,7 @@ jobs:
 
           # now empty?
           if [[ "$awk_output" == "[]" ]]; then
+            echo "" >> $GITHUB_STEP_SUMMARY
             echo "> [!CAUTION]" >> $GITHUB_STEP_SUMMARY
             echo "> Nothing left to do." >> $GITHUB_STEP_SUMMARY
             exit 4
