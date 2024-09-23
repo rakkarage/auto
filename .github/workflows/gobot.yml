@@ -79,13 +79,13 @@ jobs:
           # warn if version < 4.3 and Linux/X11 not found but Linux found
           if [[ "$(printf '%s\n' "${GODOT_VERSION}" "4.3" | sort -V | head -n1)" != "4.3" && "$linux_found" -gt 0 && "$linux_x11_found" -eq 0 ]]; then
             echo "> [!WARNING]" >> $GITHUB_STEP_SUMMARY
-            echo "> Linux platform found, but Linux/X11 is missing for Godot version < 4.3." >> $GITHUB_STEP_SUMMARY
+            echo "> The `Linux` platform is found in your export presets, but the `Linux/X11` platform is missing. For Godot versions earlier than 4.3, the `Linux/X11` platform is expected." >> $GITHUB_STEP_SUMMARY
           fi
 
           # warn if version > 4.2 and Linux not found but Linux/X11 found
           if [[ "$(printf '%s\n' "${GODOT_VERSION}" "4.2" | sort -V | head -n1)" == "4.2" && "$linux_found" -eq 0 && "$linux_x11_found" -gt 0 ]]; then
             echo "> [!WARNING]" >> $GITHUB_STEP_SUMMARY
-            echo "> Linux/X11 platform found, but Linux is missing for Godot version > 4.2." >> $GITHUB_STEP_SUMMARY
+            echo "> The `Linux/X11` platform is found in your export presets, but the `Linux` platform is missing. For Godot versions later than 4.2, the `Linux` platform is expected." >> $GITHUB_STEP_SUMMARY
           fi
       - name: Cache
         id: cache
