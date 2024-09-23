@@ -70,7 +70,7 @@ jobs:
 
           linux_found=$(echo "$awk_output" | jq 'any(.target == "Linux")')
           linux_x11_found=$(echo "$awk_output" | jq 'any(.target == "Linux/X11")')
-          if [[ "$(echo "$awk_output" | jq 'any(.target == "Web")'" == "true" ]]; then
+          if [[ "$(echo "$awk_output" | jq 'any(.target == "Web")')" == "true" ]]; then
             echo "web=true" >> $GITHUB_OUTPUT
           fi
 
