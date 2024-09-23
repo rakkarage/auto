@@ -102,6 +102,13 @@ jobs:
             fi
           fi
 
+          # now empty?
+          if [[ "$awk_output" == "[]" ]]; then
+            echo "> [!CAUTION]" >> $GITHUB_STEP_SUMMARY
+            echo "> Nothing left to do." >> $GITHUB_STEP_SUMMARY
+            exit 4
+          fi
+
           echo "$awk_output" && echo "matrix=$awk_output" >> $GITHUB_OUTPUT
       - name: Cache
         id: cache
