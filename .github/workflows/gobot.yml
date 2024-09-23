@@ -74,7 +74,7 @@ jobs:
             echo "web=true" >> $GITHUB_OUTPUT
           fi
 
-          # Warn if version < 4.3 and Linux/X11 not found but Linux found
+          # warn if version < 4.3 and Linux/X11 not found but Linux found and make it work
           if [[ "$(printf '%s\n' "${GODOT_VERSION}" "4.3" | sort -V | head -n1)" != "4.3" && "$linux_found" -gt 0 && "$linux_x11_found" -eq 0 ]]; then
               echo "> [!NOTE]" >> $GITHUB_STEP_SUMMARY
               echo "> \`Linux\` platform found, but \`Linux/X11\` missing. Godot < 4.3 expects \`Linux/X11\`. Using \`Linux/X11\`." >> $GITHUB_STEP_SUMMARY
@@ -84,7 +84,7 @@ jobs:
               echo "modified=true" >> $GITHUB_OUTPUT
           fi
 
-          # Warn if version >= 4.3 and Linux not found but Linux/X11 found
+          # warn if version >= 4.3 and Linux not found but Linux/X11 found and make it work
           if [[ "$(printf '%s\n' "${GODOT_VERSION}" "4.3" | sort -V | head -n1)" == "4.3" && "$linux_found" -eq 0 && "$linux_x11_found" -gt 0 ]]; then
               echo "> [!NOTE]" >> $GITHUB_STEP_SUMMARY
               echo "> \`Linux/X11\` platform found, but \`Linux\` missing. Godot >= 4.3 expects \`Linux\`. Using \`Linux\`." >> $GITHUB_STEP_SUMMARY
@@ -146,6 +146,11 @@ jobs:
         run: |
           mkdir -p "build/${{ matrix.dir }}"
           ./godot --headless --verbose --export-release "${{ matrix.target }}" "build/${{ matrix.dir }}/${{ matrix.file }}.${{ matrix.ext }}"
+      - name: Delete
+        if: needs.Setup.outputs.modified == 'true'
+        uses: actions/delete-artifact@v2
+        with:
+          name: export_presets
       - name: Upload Web
         if: matrix.target == 'Web'
         uses: actions/upload-pages-artifact@v3
