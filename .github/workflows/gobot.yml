@@ -35,15 +35,15 @@ jobs:
           if [ ! -f export_presets.cfg ] || [ ! -s export_presets.cfg ]; then
             echo "> [!CAUTION]" >> $GITHUB_STEP_SUMMARY
             echo "> \`export_presets.cfg\` is missing or empty. Nothing to do." >> $GITHUB_STEP_SUMMARY
-            exit 1
+            exit 111
           elif ! [[ "${GODOT_VERSION}" =~ ^[0-9]+\.[0-9]+(\.[0-9]+)?$ ]]; then
             echo "> [!CAUTION]" >> $GITHUB_STEP_SUMMARY
             echo "> Invalid version format: ${GODOT_VERSION}." >> $GITHUB_STEP_SUMMARY
-            exit 2
+            exit 222
           elif [[ "${DELETE_OLD_PAGES}" != 'true' && "${DELETE_OLD_PAGES}" != 'false' ]]; then
             echo "> [!CAUTION]" >> $GITHUB_STEP_SUMMARY
             echo "> Invalid boolean input: ${DELETE_OLD_PAGES}. Must be 'true' or 'false'." >> $GITHUB_STEP_SUMMARY
-            exit 3
+            exit 333
           fi
 
           # generate dynamic platform matrix based on presets file
