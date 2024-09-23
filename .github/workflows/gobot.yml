@@ -38,7 +38,7 @@ jobs:
             exit 1
           elif ! [[ "${GODOT_VERSION}" =~ ^[0-9]+\.[0-9]+(\.[0-9]+)?$ ]]; then
             echo "> [!CAUTION]" >> $GITHUB_STEP_SUMMARY
-            echo "> Invalid GODOT_VERSION format: ${GODOT_VERSION}" >> $GITHUB_STEP_SUMMARY
+            echo "> Invalid GODOT_VERSION format: ${GODOT_VERSION}." >> $GITHUB_STEP_SUMMARY
             exit 2
           elif [[ "${DELETE_OLD_PAGES}" != 'true' && "${DELETE_OLD_PAGES}" != 'false' ]]; then
             echo "> [!CAUTION]" >> $GITHUB_STEP_SUMMARY
@@ -74,7 +74,7 @@ jobs:
             echo "web=true" >> $GITHUB_OUTPUT
           fi
 
-          # warn if version < 4.3 and Linux/X11 not found but Linux found and make it work
+          # warn if version < 4.3 and Linux/X11 not found but Linux found, and make it work
           if [[ "$(printf '%s\n' "${GODOT_VERSION}" "4.3" | sort -V | head -n1)" != "4.3" && "$linux_found" -gt 0 && "$linux_x11_found" -eq 0 ]]; then
               echo "> [!NOTE]" >> $GITHUB_STEP_SUMMARY
               echo "> \`Linux\` found and \`Linux/X11\` missing. Modified to \`Linux/X11\` for Godot < 4.3." >> $GITHUB_STEP_SUMMARY
@@ -83,7 +83,7 @@ jobs:
               echo "modified=true" >> $GITHUB_OUTPUT
           fi
 
-          # warn if version >= 4.3 and Linux not found but Linux/X11 found and make it work
+          # warn if version >= 4.3 and Linux not found but Linux/X11 found, and make it work
           if [[ "$(printf '%s\n' "${GODOT_VERSION}" "4.3" | sort -V | head -n1)" == "4.3" && "$linux_found" -eq 0 && "$linux_x11_found" -gt 0 ]]; then
               echo "> [!NOTE]" >> $GITHUB_STEP_SUMMARY
               echo "> \`Linux/X11\` found and \`Linux\` missing. Modified to \`Linux\` for Godot >= 4.3." >> $GITHUB_STEP_SUMMARY
