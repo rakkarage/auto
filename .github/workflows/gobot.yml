@@ -101,7 +101,7 @@ jobs:
           path: export_presets.cfg
       - name: Cache
         id: cache
-        uses: actions/cache@v4
+        uses: actions/cache/save@v4
         with:
           path: |
             ./godot
