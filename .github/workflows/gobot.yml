@@ -6,6 +6,10 @@ on:
         description: Godot Version
         required: true
         type: string
+      environment:
+        description: Pages Environment
+        required: true
+        type: string
       delete-old-pages:
         description: Delete Old Pages
         required: true
@@ -166,7 +170,7 @@ jobs:
       id-token: write
       deployments: write
     environment:
-      name: github-pages
+      name: ${{ github.event.inputs.environment }}
       url: ${{ steps.deploy.outputs.page_url }}
     steps:
       - name: Delete
@@ -174,7 +178,7 @@ jobs:
         uses: strumwolf/delete-deployment-environment@v3
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          environment: github-pages
+          environment: ${{ github.event.inputs.environment }}
           onlyRemoveDeployments: true
       - name: Configure
         uses: actions/configure-pages@v5
