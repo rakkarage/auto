@@ -9,7 +9,7 @@ on:
       environment:
         description: Pages Environment
         default: 'github-pages'
-        type: environment
+        type: string
       delete-old-pages:
         description: Delete Old Pages
         default: false
