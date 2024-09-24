@@ -9,7 +9,7 @@ on:
       delete-old-pages:
         description: Delete Old Pages
         required: true
-        type: string
+        type: boolean
 concurrency:
   group: gobot
   cancel-in-progress: false
@@ -40,10 +40,6 @@ jobs:
             echo "> [!CAUTION]" >> $GITHUB_STEP_SUMMARY
             echo "> Invalid version format: \`${GODOT_VERSION}\`." >> $GITHUB_STEP_SUMMARY
             exit 22
-          elif [[ "${DELETE_OLD_PAGES}" != 'true' && "${DELETE_OLD_PAGES}" != 'false' ]]; then
-            echo "> [!CAUTION]" >> $GITHUB_STEP_SUMMARY
-            echo "> Invalid boolean input: \`${DELETE_OLD_PAGES}\`. Must be 'true' or 'false'." >> $GITHUB_STEP_SUMMARY
-            exit 33
           fi
 
           # generate dynamic build matrix based on presets file

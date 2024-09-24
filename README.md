@@ -8,7 +8,7 @@ This workflow is designed to automate the process of building and deploying Godo
 - Parses build settings from `export_presets.cfg` to generates a custom strategy matrix to run all builds concurrently.
 	- Do not need to set file names or paths just have the platform present in the file.
 	- Will use your file and extension names if set. Except web which will use `index.htm` to deploy correctly.
-	- If have wrong `Linux` platform name for version in `export_presets.cfg` will rewrite it.
+	- If have wrong `Linux`/`Linux/X11` platform name for supplied version in `export_presets.cfg`, will rewrite it.
 - Deploys web artifact to the repository GitHub Pages environment.
   - Optionally deletes old repository GitHub Pages deployments.
   - This only really works with Godot >= 4.3 (and some 3.x versions for a while)
@@ -26,7 +26,7 @@ This workflow is designed to automate the process of building and deploying Godo
 ## Jobs
 
 1. **Setup**
-	- Cache Godot and Export Templates, and analyze input to generate a dynamic build matrix.
+	- Analyze input to generate a dynamic build matrix, and Cache Godot and Export Templates.
 
 3. **Build**
 	- Export the project for each target platform concurrently.
