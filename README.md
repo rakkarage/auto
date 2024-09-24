@@ -1,6 +1,4 @@
-# auto
-
-## Gobot&nbsp;🤖
+# Gobot
 
 This workflow is designed to automate the process of building and deploying Godot projects.
 
@@ -10,8 +8,9 @@ This workflow is designed to automate the process of building and deploying Godo
 - Parses build settings from `export_presets.cfg` to generates a custom strategy matrix to run all builds concurrently.
 	- Do not need to set file names or paths just have the platform present in the file.
 	- Will use your file and extension names if set. Except web which will use `index.htm` to deploy correctly.
-- Optionally deletes old repository GitHub Pages deployments.
+	- If have wrong `Linux` platform name for version in `export_presets.cfg` will rewrite it.
 - Deploys web artifact to the repository GitHub Pages environment.
+  - Optionally deletes old repository GitHub Pages deployments.
   - This only really works with Godot >= 4.3 (and some 3.x versions for a while)
 
 > [!WARNING]
@@ -19,25 +18,29 @@ This workflow is designed to automate the process of building and deploying Godo
 
 ## Workflow Overview
 
-### Inputs
+## Inputs
 
-- `godot-version`: The version of Godot to be used in the build. This is required. Default: '4.3'
-- `delete-old-pages`: Delete old Pages deployments or not. Default: 'false'
+- `godot-version`: The version of Godot to be used in the build. This is required by called workflow. Caller workflow can set a default.
+- `delete-old-pages`: Delete old Pages deployments or not. This is required by called workflow. Caller workflow can set a default.
 
-### Jobs
+## Jobs
 
 1. **Setup**
-	- Cache Godot and Export Templates, and analyze input to generate a dynamic platform matrix.
+	- Cache Godot and Export Templates, and analyze input to generate a dynamic build matrix.
 
 3. **Build**
 	- Export the project for each target platform concurrently.
 
 5. **Deploy**
-	- Deploy Web build to Pages after optionally deleting old Pages deployments.
+	- Deploy web build to Pages after optionally deleting old Pages deployments.
 
 ## Usage
 
 To use the workflow, call it from another workflow using (for example) the `workflow_call` event and provide the required inputs:
+
+Files:
+- `gobot.yml`: This is the **reusable** or **called** workflow. You can leave this file here or copy it anywhere.
+- `gobot-go.yml`: This is the **calling** or **caller** workflow. This is the file you would use in your project's `.github/workflows` directory to call the reusable `gobot.yml` workflow.
 
 ```yaml
 name: Gobot

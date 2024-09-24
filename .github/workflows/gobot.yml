@@ -17,7 +17,7 @@ env:
   GODOT_VERSION: ${{ github.event.inputs.godot-version }}
   DELETE_OLD_PAGES: ${{ github.event.inputs.delete-old-pages }}
 jobs:
-  Setup: # Cache Godot and Export Templates, and analyze input to generate a dynamic platform matrix.
+  Setup: # Analyze input to generate a dynamic build matrix, and Cache Godot and Export Templates.
     runs-on: ubuntu-latest
     outputs:
       matrix: ${{ steps.parse.outputs.matrix }}
@@ -46,7 +46,7 @@ jobs:
             exit 33
           fi
 
-          # generate dynamic platform matrix based on presets file
+          # generate dynamic build matrix based on presets file
           awk_output=$(awk -F= '
           BEGIN { printf "["; first=1 }
           /^\s*platform/ { platform=$2; gsub(/^"|"$/, "", platform) }
