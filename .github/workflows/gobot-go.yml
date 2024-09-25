@@ -7,7 +7,7 @@ on:
         default: '4.3'
       environment:
         description: Pages Environment
-        type: environment
+        default: github-pages
       delete-old-pages:
         description: Delete Old Pages
         type: boolean

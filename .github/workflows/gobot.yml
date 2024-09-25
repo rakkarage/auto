@@ -4,15 +4,14 @@ on:
     inputs:
       godot-version:
         description: Godot Version
-        required: true
+        default: '4.3'
         type: string
       environment:
         description: Pages Environment
-        required: true
+        default: github-pages
         type: string
       delete-old-pages:
         description: Delete Old Pages
-        required: true
         type: boolean
 concurrency:
   group: gobot
