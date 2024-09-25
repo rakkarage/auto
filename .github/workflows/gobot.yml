@@ -13,7 +13,7 @@ on:
       delete-old-pages:
         description: Delete Old Pages
         required: true
-        type: string
+        type: boolean
 concurrency:
   group: gobot
   cancel-in-progress: false
