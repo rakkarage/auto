@@ -36,6 +36,8 @@ This workflow is designed to automate the process of building and deploying Godo
 
 ## Usage
 
+Ensure build platforms are defined in export_settings.cfg
+
 If you have a web build, enable `Build and Deployment from GitHub Actions` in repo/settings/pages.
 
 To use the workflow, call it from another workflow using (for example) the `workflow_call` event and provide the required inputs:
@@ -52,9 +54,12 @@ on:
       godot-version:
         description: Godot Version
         default: '4.3'
+      environment:
+        description: Pages Environment
+        default: github-pages
       delete-old-pages:
         description: Delete Old Pages
-        default: 'false'
+        type: boolean
 permissions:
   pages: write
   id-token: write
@@ -64,6 +69,7 @@ jobs:
     uses: rakkarage/auto/.github/workflows/gobot.yml@main
     with:
       godot-version: ${{ github.event.inputs.godot-version }}
+      environment: ${{ github.event.inputs.environment }}
       delete-old-pages: ${{ github.event.inputs.delete-old-pages }}
 ```
 
