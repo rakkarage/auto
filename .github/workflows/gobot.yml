@@ -12,6 +12,7 @@ on:
         type: string
       delete-old-pages:
         description: Delete Old Pages
+        default: false
         type: boolean
 concurrency:
   group: gobot

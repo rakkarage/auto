@@ -10,6 +10,7 @@ on:
         default: github-pages
       delete-old-pages:
         description: Delete Old Pages
+        default: false
         type: boolean
 permissions:
   pages: write
