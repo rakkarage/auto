@@ -169,11 +169,10 @@ jobs:
     needs: [Setup, Build]
     if: needs.Setup.outputs.web == 'true'
     runs-on: ubuntu-latest
-    permissions: write-all
-    #   pages: write
-    #   id-token: write
-    #   deployments: write
-    #   repository: write
+    permissions:
+      pages: write
+      id-token: write
+      deployments: write
     environment:
       name: ${{ github.event.inputs.environment }}
       url: ${{ steps.deploy.outputs.page_url }}
