@@ -11,10 +11,10 @@ on:
       delete-old-pages:
         description: Delete Old Pages
         type: boolean
-permissions:
-  pages: write
-  id-token: write
-  deployments: write
+permissions: write-all
+#   pages: write
+#   id-token: write
+#   deployments: write
 jobs:
   Gobot:
     uses: rakkarage/auto/.github/workflows/gobot.yml@main
