@@ -36,6 +36,8 @@ This workflow is designed to automate the process of building and deploying Godo
 
 ## Usage
 
+If you have a web build, enable `Build and Deployment from GitHub Actions` in repo/settings/pages.
+
 To use the workflow, call it from another workflow using (for example) the `workflow_call` event and provide the required inputs:
 
 Files:
