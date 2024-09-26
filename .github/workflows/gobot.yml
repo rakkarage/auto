@@ -19,7 +19,6 @@ concurrency:
   cancel-in-progress: false
 env:
   GODOT_VERSION: ${{ github.event.inputs.godot-version }}
-  DELETE_OLD_PAGES: ${{ github.event.inputs.delete-old-pages }}
 jobs:
   Setup: # Analyze input to generate a dynamic build matrix, and Cache Godot and Export Templates.
     runs-on: ubuntu-latest
