@@ -162,7 +162,7 @@ jobs:
           path: build/${{ matrix.dir }}
   Deploy: # Deploy web build to Pages after optionally deleting old Pages deployments.
     needs: [Setup, Build]
-    if: needs.Setup.outputs.web == 'true'
+    if: needs.Setup.outputs.web == 'true' && github.event.inputs.environment != ''
     runs-on: ubuntu-latest
     permissions:
       pages: write
