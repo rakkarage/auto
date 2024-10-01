@@ -14,11 +14,14 @@ on:
         description: Delete Old Pages
         default: 'false'
         type: string
+
 concurrency:
   group: gobot
   cancel-in-progress: false
+
 env:
   GODOT_VERSION: ${{ github.event.inputs.godot-version }}
+
 jobs:
   Setup: # Analyze input to generate a dynamic build matrix, and Cache Godot and Export Templates.
     runs-on: ubuntu-latest
@@ -26,11 +29,13 @@ jobs:
       matrix: ${{ steps.parse.outputs.matrix }}
       modified: ${{ steps.parse.outputs.modified }}
       web: ${{ steps.parse.outputs.web }}
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
           submodules: true
+
       - name: Parse
         id: parse
         run: |
@@ -92,12 +97,14 @@ jobs:
           fi
 
           echo "matrix=$awk_output" >> $GITHUB_OUTPUT
+
       - name: Upload
         if: steps.parse.outputs.modified == 'true'
         uses: actions/upload-artifact@v4
         with:
           name: export_presets
           path: export_presets.cfg
+
       - name: Cache
         id: cache
         uses: actions/cache@v4
@@ -106,6 +113,7 @@ jobs:
             ./godot
             ~/.local/share/godot/export_templates/${{ env.GODOT_VERSION }}.stable
           key: ${{ runner.os }}_Godot_${{ env.GODOT_VERSION }}
+
       - name: Cache Godot
         if: steps.cache.outputs.cache-hit != 'true'
         run: |
@@ -113,22 +121,26 @@ jobs:
           unzip -q godot.zip && mv Godot_v${GODOT_VERSION}-stable_linux.x86_64 godot && chmod +x godot
           curl -L -o templates.tpz https://downloads.tuxfamily.org/godotengine/${GODOT_VERSION}/Godot_v${GODOT_VERSION}-stable_export_templates.tpz
           mkdir -p ~/.local/share/godot/export_templates/${GODOT_VERSION}.stable && unzip -q templates.tpz && mv templates/* ~/.local/share/godot/export_templates/${GODOT_VERSION}.stable
+
   Build: # Export the project for each target platform concurrently.
     needs: [Setup]
     runs-on: ubuntu-latest
     strategy:
       matrix:
         include: ${{ fromJson(needs.Setup.outputs.matrix) }}
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
           submodules: true
+
       - name: Download
         if: needs.Setup.outputs.modified == 'true'
         uses: actions/download-artifact@v4
         with:
           name: export_presets
+
       - name: Restore
         id: cache
         uses: actions/cache/restore@v4
@@ -137,29 +149,35 @@ jobs:
             ./godot
             ~/.local/share/godot/export_templates/${{ env.GODOT_VERSION }}.stable
           key: ${{ runner.os }}_Godot_${{ env.GODOT_VERSION }}
+
       - name: Import
         run: ./godot --headless --verbose --editor --quit
+
       - name: Export
         run: |
           mkdir -p "build/${{ matrix.dir }}"
           ./godot --headless --verbose --export-release "${{ matrix.target }}" "build/${{ matrix.dir }}/${{ matrix.file }}.${{ matrix.ext }}"
+
       - name: Delete
         if: needs.Setup.outputs.modified == 'true'
         uses: geekyeggo/delete-artifact@v5
         with:
           name: export_presets
+
       - name: Upload Web
         if: matrix.target == 'Web'
         uses: actions/upload-pages-artifact@v3
         with:
           name: ${{ github.event.repository.name }}_${{ matrix.dir }}_Godot_${{ env.GODOT_VERSION }}
           path: build/${{ matrix.dir }}
+
       - name: Upload Not Web
         if: matrix.target != 'Web'
         uses: actions/upload-artifact@v4
         with:
           name: ${{ github.event.repository.name }}_${{ matrix.dir }}_Godot_${{ env.GODOT_VERSION }}
           path: build/${{ matrix.dir }}
+
   Deploy: # Deploy web build to Pages after optionally deleting old Pages deployments.
     needs: [Setup, Build]
     if: needs.Setup.outputs.web == 'true' && github.event.inputs.environment != ''
@@ -171,6 +189,7 @@ jobs:
     environment:
       name: ${{ github.event.inputs.environment }}
       url: ${{ steps.deploy.outputs.page_url }}
+
     steps:
       - name: Delete
         if: github.event.inputs.delete-old-pages == 'true'
@@ -179,8 +198,10 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           environment: ${{ github.event.inputs.environment }}
           onlyRemoveDeployments: true
+
       - name: Configure
         uses: actions/configure-pages@v5
+
       - name: Deploy
         id: deploy
         uses: actions/deploy-pages@v4
