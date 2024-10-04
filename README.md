@@ -21,6 +21,7 @@ This workflow is designed to automate the process of building and deploying Godo
 ## Inputs
 
 - `godot-version`: The version of Godot to be used in the build. This is required by called workflow. Caller workflow can set a default.
+- `environment`: The GitHub Pages environment to deploy the web build to. This is required by called workflow. Caller workflow can set a default.
 - `delete-old-pages`: Delete old Pages deployments or not. This is required by called workflow. Caller workflow can set a default.
 
 ## Jobs
