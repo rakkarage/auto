@@ -23,7 +23,7 @@ env:
   GODOT_VERSION: ${{ github.event.inputs.godot-version }}
 
 jobs:
-  Setup: # Analyze input to generate a dynamic build matrix, and Cache Godot and Export Templates.
+  Setup: # Analyze input to generate a dynamic build matrix, and cache Godot and Export Templates.
     runs-on: ubuntu-latest
     outputs:
       matrix: ${{ steps.parse.outputs.matrix }}
