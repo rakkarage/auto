@@ -14,13 +14,18 @@ on:
         description: Delete Old Pages
         default: 'false'
         type: string
+      repository-name:
+        description: Repository Name (for artifact naming)
+        default: ''
+        type: string
 
 concurrency:
   group: gobot
   cancel-in-progress: false
 
 env:
-  GODOT_VERSION: ${{ github.event.inputs.godot-version }}
+  GODOT_VERSION: ${{ inputs.godot-version }}
+  REPO_NAME: ${{ inputs.repository-name != '' && inputs.repository-name || github.event.repository.name }}
 
 jobs:
   Setup: # Analyze input to generate a dynamic build matrix, and cache Godot and Export Templates.
@@ -38,6 +43,8 @@ jobs:
 
       - name: Parse
         id: parse
+        env:
+          REPO_NAME: ${{ env.REPO_NAME }}
         run: |
           # error if presets file missing/empty, or input malformed
           if [ ! -f export_presets.cfg ] || [ ! -s export_presets.cfg ]; then
@@ -51,16 +58,16 @@ jobs:
           fi
 
           # generate dynamic build matrix based on presets file
-          awk_output=$(awk -F= '
+          awk_output=$(awk -F= -v repo_name="${REPO_NAME}" '
           BEGIN { printf "["; first=1 }
           /^\s*platform/ { platform=$2; gsub(/^"|"$/, "", platform) }
           /^\s*export_path/ {
             path=$2; gsub(/^"|"$/, "", path)
             if (path == "") {
-              path = (platform == "Linux") || (platform == "Linux/X11") ? "${{ github.event.repository.name }}.x86_64" :
-                     (platform == "macOS") ? "${{ github.event.repository.name }}.zip" :
+              path = (platform == "Linux") || (platform == "Linux/X11") ? repo_name ".x86_64" :
+                     (platform == "macOS") ? repo_name ".zip" :
                      (platform == "Web") ? "index.html" :
-                     (platform == "Windows Desktop") ? "${{ github.event.repository.name }}.exe" : ""
+                     (platform == "Windows Desktop") ? repo_name ".exe" : ""
             }
             platform_dir = (platform == "Windows Desktop") ? "Windows" :
                            (platform == "Linux/X11") ? "Linux" : platform
@@ -168,35 +175,35 @@ jobs:
         if: matrix.target == 'Web'
         uses: actions/upload-pages-artifact@v3
         with:
-          name: ${{ github.event.repository.name }}_${{ matrix.dir }}_Godot_${{ env.GODOT_VERSION }}
+          name: ${{ env.REPO_NAME }}_${{ matrix.dir }}_Godot_${{ env.GODOT_VERSION }}
           path: build/${{ matrix.dir }}
 
       - name: Upload Not Web
         if: matrix.target != 'Web'
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ github.event.repository.name }}_${{ matrix.dir }}_Godot_${{ env.GODOT_VERSION }}
+          name: ${{ env.REPO_NAME }}_${{ matrix.dir }}_Godot_${{ env.GODOT_VERSION }}
           path: build/${{ matrix.dir }}
 
   Deploy: # Deploy web build to Pages after optionally deleting old Pages deployments.
     needs: [Setup, Build]
-    if: needs.Setup.outputs.web == 'true' && github.event.inputs.environment != ''
+    if: needs.Setup.outputs.web == 'true' && inputs.environment != ''
     runs-on: ubuntu-latest
     permissions:
       pages: write
       id-token: write
       deployments: write
     environment:
-      name: ${{ github.event.inputs.environment }}
+      name: ${{ inputs.environment }}
       url: ${{ steps.deploy.outputs.page_url }}
 
     steps:
       - name: Delete
-        if: github.event.inputs.delete-old-pages == 'true'
+        if: inputs.delete-old-pages == 'true'
         uses: strumwolf/delete-deployment-environment@v3
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          environment: ${{ github.event.inputs.environment }}
+          environment: ${{ inputs.environment }}
           onlyRemoveDeployments: true
 
       - name: Configure
@@ -206,4 +213,4 @@ jobs:
         id: deploy
         uses: actions/deploy-pages@v4
         with:
-          artifact_name: ${{ github.event.repository.name }}_Web_Godot_${{ env.GODOT_VERSION }}
+          artifact_name: ${{ env.REPO_NAME }}_Web_Godot_${{ env.GODOT_VERSION }}
