@@ -4,7 +4,7 @@ on:
     inputs:
       godot-version:
         description: Godot Version
-        default: '4.3'
+        default: '4.7'
         type: string
       environment:
         description: Pages Environment

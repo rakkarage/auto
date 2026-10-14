@@ -4,7 +4,7 @@ on:
     inputs:
       godot-version:
         description: Godot Version
-        default: '4.3'
+        default: '4.7'
         type: string
       environment:
         description: Pages Environment
@@ -12,15 +12,15 @@ on:
         type: string
       delete-old-pages:
         description: Delete Old Pages
-        default: 'false'
-        type: string
+        default: false
+        type: boolean
       repository-name:
-        description: Repository Name (for artifact naming)
+        description: Repository (artifact) Name
         default: ''
         type: string
 
 concurrency:
-  group: gobot
+  group: gobot-${{ inputs.environment }}
   cancel-in-progress: false
 
 env:
@@ -103,6 +103,10 @@ jobs:
               echo "modified=true" >> $GITHUB_OUTPUT
           fi
 
+          echo "### Gobot" >> $GITHUB_STEP_SUMMARY
+          echo "> [!TIP]" >> $GITHUB_STEP_SUMMARY
+          echo "> Building \`${GODOT_VERSION}\` for: $(echo "$awk_output" | jq -r 'map(.target) | join(", ")')" >> $GITHUB_STEP_SUMMARY
+
           echo "matrix=$awk_output" >> $GITHUB_OUTPUT
 
       - name: Upload
@@ -124,9 +128,9 @@ jobs:
       - name: Cache Godot
         if: steps.cache.outputs.cache-hit != 'true'
         run: |
-          curl -L -o godot.zip https://downloads.tuxfamily.org/godotengine/${GODOT_VERSION}/Godot_v${GODOT_VERSION}-stable_linux.x86_64.zip
+          curl -L -o godot.zip https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}-stable/Godot_v${GODOT_VERSION}-stable_linux.x86_64.zip
           unzip -q godot.zip && mv Godot_v${GODOT_VERSION}-stable_linux.x86_64 godot && chmod +x godot
-          curl -L -o templates.tpz https://downloads.tuxfamily.org/godotengine/${GODOT_VERSION}/Godot_v${GODOT_VERSION}-stable_export_templates.tpz
+          curl -L -o templates.tpz https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}-stable/Godot_v${GODOT_VERSION}-stable_export_templates.tpz
           mkdir -p ~/.local/share/godot/export_templates/${GODOT_VERSION}.stable && unzip -q templates.tpz && mv templates/* ~/.local/share/godot/export_templates/${GODOT_VERSION}.stable
 
   Build: # Export the project for each target platform concurrently.
@@ -199,7 +203,7 @@ jobs:
 
     steps:
       - name: Delete
-        if: inputs.delete-old-pages == 'true'
+        if: inputs.delete-old-pages
         uses: strumwolf/delete-deployment-environment@v3
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -214,3 +218,8 @@ jobs:
         uses: actions/deploy-pages@v4
         with:
           artifact_name: ${{ env.REPO_NAME }}_Web_Godot_${{ env.GODOT_VERSION }}
+
+      - name: Display
+        run: |
+          echo "> [!TIP]" >> $GITHUB_STEP_SUMMARY
+          echo "> Deployed to: \`${{ steps.deploy.outputs.page_url }}\`" >> $GITHUB_STEP_SUMMARY
