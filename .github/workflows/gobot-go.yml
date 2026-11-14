@@ -15,7 +15,7 @@ on:
         default: false
         type: boolean
       imply-platform:
-        description: Imply (export_presets.cfg)
+        description: Imply platform (e.g. "Web") if export_presets.cfg is missing or empty
         default: ''
         type: string
 

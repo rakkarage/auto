@@ -19,7 +19,7 @@ on:
         default: ''
         type: string
       imply-platform:
-        description: Platform to imply when export_presets.cfg is missing or empty (e.g. Web). Off when empty.
+        description: Imply platform (e.g. "Web") if export_presets.cfg is missing or empty
         default: ''
         type: string
 
