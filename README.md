@@ -7,7 +7,7 @@ This workflow is designed to automate the process of building and deploying Godo
 - Caches Godot and templates, so only downloads once.
 - Parses build settings from `export_presets.cfg` to generates a custom strategy matrix to run all builds concurrently.
   - Do not need to set file names or paths just have the platform present in the file.
-  - Will use your file and extension names if set. Except web which will use `index.htm` to deploy correctly.
+  - Will use your file and extension names if set. Except web which will use `index.html` to deploy correctly.
   - If have wrong `Linux`/`Linux/X11` platform name for supplied version in `export_presets.cfg`, will rewrite it.
 - Deploys web artifact to the repository GitHub Pages environment.
   - Optionally deletes old repository GitHub Pages deployments.
@@ -20,9 +20,10 @@ This workflow is designed to automate the process of building and deploying Godo
 
 ## Inputs
 
-- `godot-version`: The version of Godot to be used in the build. This is required by called workflow. Caller workflow can set a default.
-- `environment`: The GitHub Pages environment to deploy the web build to. This is required by called workflow. Caller workflow can set a default.
-- `delete-old-pages`: Delete old Pages deployments or not. This is required by called workflow. Caller workflow can set a default.
+- `godot-version`: Godot version to build with (e.g. `4.7`).
+- `imply-platform`: Platform to imply (e.g. `Web`) if `export_presets.cfg` is missing or empty; leave empty to keep the default fail-fast behavior.
+- `environment`: GitHub Pages environment for the web deploy (leave empty to skip deploy).
+- `delete-old-pages`: Delete previous Pages deployments before deploying.
 
 ## Jobs
 
@@ -35,11 +36,11 @@ This workflow is designed to automate the process of building and deploying Godo
 
 ## Usage
 
-Ensure build platforms are defined in export_settings.cfg
+Ensure build platforms are defined in `export_presets.cfg` (or set `imply-platform`, e.g. `Web`, to generate a minimal preset when it's missing).
 
 If you have a web build, enable `Build and Deployment from GitHub Actions` in repo/settings/pages.
 
-To use the workflow, call it from another workflow using (for example) the `workflow_call` event and provide the required inputs:
+To use the workflow, call it from another workflow using (for example) the `workflow_dispatch` event and provide the inputs:
 
 Files:
 
@@ -53,12 +54,19 @@ on:
     inputs:
       godot-version:
         description: Godot Version
-        default: '4.3'
+        default: '4.7'
+        type: string
+      imply-platform:
+        description: Imply platform (e.g. "Web") if export_presets.cfg is missing or empty
+        default: ''
+        type: string
       environment:
         description: Pages Environment
+        default: github-pages
         type: environment
       delete-old-pages:
         description: Delete Old Pages
+        default: false
         type: boolean
 permissions:
   pages: write
@@ -68,9 +76,10 @@ jobs:
   Gobot:
     uses: rakkarage/auto/.github/workflows/gobot.yml@main
     with:
-      godot-version: ${{ github.event.inputs.godot-version }}
-      environment: ${{ github.event.inputs.environment }}
-      delete-old-pages: ${{ github.event.inputs.delete-old-pages }}
+      godot-version: ${{ inputs.godot-version }}
+      imply-platform: ${{ inputs.imply-platform }}
+      environment: ${{ inputs.environment }}
+      delete-old-pages: ${{ inputs.delete-old-pages }}
 ```
 
 ## Screenshots

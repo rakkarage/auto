@@ -6,6 +6,10 @@ on:
         description: Godot Version
         default: '4.7'
         type: string
+      imply-platform:
+        description: Imply platform (e.g. "Web") if export_presets.cfg is missing or empty
+        default: ''
+        type: string
       environment:
         description: Pages Environment
         default: github-pages
@@ -14,10 +18,6 @@ on:
         description: Delete Old Pages
         default: false
         type: boolean
-      imply-platform:
-        description: Imply platform (e.g. "Web") if export_presets.cfg is missing or empty
-        default: ''
-        type: string
 
 permissions:
   pages: write
@@ -30,6 +30,6 @@ jobs:
     uses: rakkarage/auto/.github/workflows/gobot.yml@main
     with:
       godot-version: ${{ inputs.godot-version }}
+      imply-platform: ${{ inputs.imply-platform }}
       environment: ${{ inputs.environment }}
       delete-old-pages: ${{ inputs.delete-old-pages }}
-      imply-platform: ${{ inputs.imply-platform }}
