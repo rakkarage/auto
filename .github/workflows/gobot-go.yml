@@ -14,6 +14,10 @@ on:
         description: Delete Old Pages
         default: false
         type: boolean
+      imply-platform:
+        description: Imply (export_presets.cfg)
+        default: ''
+        type: string
 
 permissions:
   pages: write
@@ -28,3 +32,4 @@ jobs:
       godot-version: ${{ inputs.godot-version }}
       environment: ${{ inputs.environment }}
       delete-old-pages: ${{ inputs.delete-old-pages }}
+      imply-platform: ${{ inputs.imply-platform }}

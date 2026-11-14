@@ -18,6 +18,10 @@ on:
         description: Repository (artifact) Name
         default: ''
         type: string
+      imply-platform:
+        description: Platform to imply when export_presets.cfg is missing or empty (e.g. Web). Off when empty.
+        default: ''
+        type: string
 
 concurrency:
   group: gobot-${{ inputs.environment }}
@@ -26,6 +30,7 @@ concurrency:
 env:
   GODOT_VERSION: ${{ inputs.godot-version }}
   REPO_NAME: ${{ inputs.repository-name != '' && inputs.repository-name || github.event.repository.name }}
+  IMPLY_PLATFORM: ${{ inputs.imply-platform }}
 
 jobs:
   Setup: # Analyze input to generate a dynamic build matrix, and cache Godot and Export Templates.
@@ -45,12 +50,45 @@ jobs:
         id: parse
         env:
           REPO_NAME: ${{ env.REPO_NAME }}
+          IMPLY_PLATFORM: ${{ env.IMPLY_PLATFORM }}
         run: |
           # error if presets file missing/empty, or input malformed
           if [ ! -f export_presets.cfg ] || [ ! -s export_presets.cfg ]; then
-            echo "> [!CAUTION]" >> $GITHUB_STEP_SUMMARY
-            echo "> \`export_presets.cfg\` is missing or empty." >> $GITHUB_STEP_SUMMARY
-            exit 1
+            if [ -n "${IMPLY_PLATFORM}" ]; then
+              echo "> [!WARNING]" >> $GITHUB_STEP_SUMMARY
+              echo "> \`export_presets.cfg\` is missing or empty. Implying platform \`${IMPLY_PLATFORM}\` with a minimal generated preset." >> $GITHUB_STEP_SUMMARY
+              case "${IMPLY_PLATFORM}" in
+                "Web")
+                  export_path="index.html"
+                  ;;
+                "Linux"|"Linux/X11")
+                  export_path="${REPO_NAME}.x86_64"
+                  ;;
+                "Windows Desktop")
+                  export_path="${REPO_NAME}.exe"
+                  ;;
+                "macOS")
+                  export_path="${REPO_NAME}.zip"
+                  ;;
+                *)
+                  export_path="${REPO_NAME}"
+                  ;;
+              esac
+              printf '%s\n' \
+                '[preset.0]' \
+                '' \
+                "name=\"${IMPLY_PLATFORM}\"" \
+                "platform=\"${IMPLY_PLATFORM}\"" \
+                'runnable=true' \
+                "export_path=\"${export_path}\"" \
+                '' \
+                '[preset.0.options]' > export_presets.cfg
+              echo "modified=true" >> $GITHUB_OUTPUT
+            else
+              echo "> [!CAUTION]" >> $GITHUB_STEP_SUMMARY
+              echo "> \`export_presets.cfg\` is missing or empty. Set \`imply-platform\` (e.g. \`Web\`) to generate a minimal preset and continue." >> $GITHUB_STEP_SUMMARY
+              exit 1
+            fi
           elif ! [[ "${GODOT_VERSION}" =~ ^[0-9]+\.[0-9]+(\.[0-9]+)?$ ]]; then
             echo "> [!CAUTION]" >> $GITHUB_STEP_SUMMARY
             echo "> Invalid version format: \`${GODOT_VERSION}\`." >> $GITHUB_STEP_SUMMARY
