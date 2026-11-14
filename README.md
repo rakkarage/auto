@@ -6,9 +6,9 @@ This workflow is designed to automate the process of building and deploying Godo
 
 - Caches Godot and templates, so only downloads once.
 - Parses build settings from `export_presets.cfg` to generates a custom strategy matrix to run all builds concurrently.
-	- Do not need to set file names or paths just have the platform present in the file.
-	- Will use your file and extension names if set. Except web which will use `index.htm` to deploy correctly.
-	- If have wrong `Linux`/`Linux/X11` platform name for supplied version in `export_presets.cfg`, will rewrite it.
+  - Do not need to set file names or paths just have the platform present in the file.
+  - Will use your file and extension names if set. Except web which will use `index.htm` to deploy correctly.
+  - If have wrong `Linux`/`Linux/X11` platform name for supplied version in `export_presets.cfg`, will rewrite it.
 - Deploys web artifact to the repository GitHub Pages environment.
   - Optionally deletes old repository GitHub Pages deployments.
   - This only really works with Godot >= 4.3 (and some 3.x versions for a while)
@@ -26,14 +26,12 @@ This workflow is designed to automate the process of building and deploying Godo
 
 ## Jobs
 
-1. **Setup**
-	- Analyze input to generate a dynamic build matrix, and Cache Godot and Export Templates.
-
-3. **Build**
-	- Export the project for each target platform concurrently.
-
-5. **Deploy**
-	- Deploy web build to Pages after optionally deleting old Pages deployments.
+- **Setup**
+  - Analyze input to generate a dynamic build matrix, and Cache Godot and Export Templates.
+- **Build**
+  - Export the project for each target platform concurrently.
+- **Deploy**
+  - Deploy web build to Pages after optionally deleting old Pages deployments.
 
 ## Usage
 
@@ -44,6 +42,7 @@ If you have a web build, enable `Build and Deployment from GitHub Actions` in re
 To use the workflow, call it from another workflow using (for example) the `workflow_call` event and provide the required inputs:
 
 Files:
+
 - `gobot.yml`: This is the **reusable** or **called** workflow. You can leave this file here or copy it anywhere.
 - `gobot-go.yml`: This is the **calling** or **caller** workflow. This is the file you would use in your project's `.github/workflows` directory to call the reusable `gobot.yml` workflow.
 
@@ -76,8 +75,8 @@ jobs:
 
 ## Screenshots
 
-![](screenshot1.png)
-![](screenshot2.png)
+![screenshot1](screenshot1.png)
+![screenshot2](screenshot2.png)
 
 ## Todo
 
