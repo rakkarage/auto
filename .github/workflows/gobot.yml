@@ -38,7 +38,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           submodules: true
 
@@ -145,14 +145,14 @@ jobs:
 
       - name: Upload
         if: steps.parse.outputs.modified == 'true'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: export_presets
           path: export_presets.cfg
 
       - name: Cache
         id: cache
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: |
             ./godot
@@ -176,19 +176,19 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           submodules: true
 
       - name: Download
         if: needs.Setup.outputs.modified == 'true'
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: export_presets
 
       - name: Restore
         id: cache
-        uses: actions/cache/restore@v4
+        uses: actions/cache/restore@v6
         with:
           path: |
             ./godot
@@ -205,20 +205,20 @@ jobs:
 
       - name: Delete
         if: needs.Setup.outputs.modified == 'true'
-        uses: geekyeggo/delete-artifact@v5
+        uses: geekyeggo/delete-artifact@v6
         with:
           name: export_presets
 
       - name: Upload Web
         if: matrix.target == 'Web'
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-pages-artifact@v5
         with:
           name: ${{ env.REPO_NAME }}_${{ matrix.dir }}_Godot_${{ env.GODOT_VERSION }}
           path: build/${{ matrix.dir }}
 
       - name: Upload Not Web
         if: matrix.target != 'Web'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: ${{ env.REPO_NAME }}_${{ matrix.dir }}_Godot_${{ env.GODOT_VERSION }}
           path: build/${{ matrix.dir }}
@@ -238,18 +238,18 @@ jobs:
     steps:
       - name: Delete
         if: inputs.delete-old-pages
-        uses: strumwolf/delete-deployment-environment@v3
+        uses: strumwolf/delete-deployment-environment@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           environment: ${{ inputs.environment }}
           onlyRemoveDeployments: true
 
       - name: Configure
-        uses: actions/configure-pages@v5
+        uses: actions/configure-pages@v6
 
       - name: Deploy
         id: deploy
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5
         with:
           artifact_name: ${{ env.REPO_NAME }}_Web_Godot_${{ env.GODOT_VERSION }}
 
