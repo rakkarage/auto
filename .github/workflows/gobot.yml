@@ -256,4 +256,4 @@ jobs:
       - name: Display
         run: |
           echo "> [!TIP]" >> $GITHUB_STEP_SUMMARY
-          echo "> Deployed to: \`${{ steps.deploy.outputs.page_url }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "> Deployed to: [${{ steps.deploy.outputs.page_url }}](${{ steps.deploy.outputs.page_url }})" >> $GITHUB_STEP_SUMMARY
