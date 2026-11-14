@@ -7,8 +7,8 @@ on:
         default: '4.7'
         type: string
       imply-platform:
-        description: Imply platform (e.g. "Web") if export_presets.cfg is missing or empty
-        default: ''
+        description: Imply Platform
+        default: 'Web'
         type: string
       environment:
         description: Pages Environment

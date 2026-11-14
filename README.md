@@ -20,9 +20,9 @@ This workflow is designed to automate the process of building and deploying Godo
 
 ## Inputs
 
-- `godot-version`: Godot version to build with (e.g. `4.7`).
-- `imply-platform`: Platform to imply (e.g. `Web`) if `export_presets.cfg` is missing or empty; leave empty to keep the default fail-fast behavior.
-- `environment`: GitHub Pages environment for the web deploy (leave empty to skip deploy).
+- `godot-version`: Godot version to build with (default: `4.7`).
+- `imply-platform`: Platform to imply if `export_presets.cfg` is missing or empty (default: `Web`).
+- `environment`: GitHub Pages environment for the web deploy.
 - `delete-old-pages`: Delete previous Pages deployments before deploying.
 
 ## Jobs
@@ -36,7 +36,7 @@ This workflow is designed to automate the process of building and deploying Godo
 
 ## Usage
 
-Ensure build platforms are defined in `export_presets.cfg` (or set `imply-platform`, e.g. `Web`, to generate a minimal preset when it's missing).
+Ensure build platforms are defined in `export_presets.cfg`. If it's missing or empty, a minimal `Web` preset is implied by default (set `imply-platform` to change the platform, or empty to fail).
 
 If you have a web build, enable `Build and Deployment from GitHub Actions` in repo/settings/pages.
 
@@ -57,8 +57,8 @@ on:
         default: '4.7'
         type: string
       imply-platform:
-        description: Imply platform (e.g. "Web") if export_presets.cfg is missing or empty
-        default: ''
+        description: Imply Platform
+        default: 'Web'
         type: string
       environment:
         description: Pages Environment
