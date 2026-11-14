@@ -49,12 +49,13 @@ jobs:
           # error if presets file missing/empty, or input malformed
           if [ ! -f export_presets.cfg ] || [ ! -s export_presets.cfg ]; then
             echo "> [!CAUTION]" >> $GITHUB_STEP_SUMMARY
-            echo "> \`export_presets.cfg\` is missing or empty. Nothing to do." >> $GITHUB_STEP_SUMMARY
-            exit 11
+            echo "> \`export_presets.cfg\` is missing or empty." >> $GITHUB_STEP_SUMMARY
+            exit 1
+          fi
           elif ! [[ "${GODOT_VERSION}" =~ ^[0-9]+\.[0-9]+(\.[0-9]+)?$ ]]; then
             echo "> [!CAUTION]" >> $GITHUB_STEP_SUMMARY
             echo "> Invalid version format: \`${GODOT_VERSION}\`." >> $GITHUB_STEP_SUMMARY
-            exit 22
+            exit 2
           fi
 
           # generate dynamic build matrix based on presets file
