@@ -26,7 +26,7 @@ permissions:
 
 jobs:
   Gobot:
-    # https://github.com/rakkarage/auto/blob/main/.github/workflows/gobot.yml
+    # https://github.com/rakkarage/auto/blob/v1/.github/workflows/gobot.yml
     uses: rakkarage/auto/.github/workflows/gobot.yml@v1
     with:
       godot-version: ${{ inputs.godot-version }}
