@@ -74,13 +74,16 @@ permissions:
   deployments: write
 jobs:
   Gobot:
-    uses: rakkarage/auto/.github/workflows/gobot.yml@main
+    uses: rakkarage/auto/.github/workflows/gobot.yml@v1
     with:
       godot-version: ${{ inputs.godot-version }}
       imply-platform: ${{ inputs.imply-platform }}
       environment: ${{ inputs.environment }}
       delete-old-pages: ${{ inputs.delete-old-pages }}
 ```
+
+> [!NOTE]
+> Pin to `@v1` for the latest compatible v1 release, `@v1.x.y` for an exact version, or a commit SHA for maximum reproducibility. `@main` tracks the latest development state and may include breaking changes.
 
 ## Screenshots
 
